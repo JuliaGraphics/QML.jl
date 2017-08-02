@@ -2,7 +2,7 @@
 
 using Base.Test
 using QML
-using StateMachineIterator
+using StatefulFunctions
 
 qmlfile = joinpath(dirname(Base.source_path()), "qml", "progressbar.qml")
 
@@ -13,7 +13,7 @@ end
 const simulation_state = SimulationState(0.0)
 
 # Our simulation is just a busy wait, producing progress between 0.0 and 1.0
-@iterator function simulate()
+@stateful function simulate()
   counter = 0.0
   maxcount = 1000000000.0
   while counter < maxcount
