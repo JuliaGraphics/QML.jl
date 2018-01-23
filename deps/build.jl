@@ -63,7 +63,7 @@ if QT_ROOT == ""
       end
 
       if BinDeps.can_use(AptGet)
-        printrun(`sudo apt-get install cmake cmake-data qtdeclarative5-dev qml-module-qtquick-controls qml-module-qtquick-dialogs qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings qmlscene qt5-default`)
+        printrun(`sudo apt-get -y install cmake cmake-data qtdeclarative5-dev qml-module-qtquick-controls qml-module-qtquick-dialogs qml-module-qt-labs-folderlistmodel qml-module-qt-labs-settings qmlscene qt5-default`)
       elseif BinDeps.can_use(Pacman)
         printrun(`sudo pacman -S --needed qt5-quickcontrols2`)
       elseif BinDeps.can_use(Yum)
