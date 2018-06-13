@@ -139,7 +139,7 @@ function Base.display(d::JuliaDisplay, x)
   if !written
     throw(ErrorException("Can't display using any of the types $supported_types"))
   end
-  
+
 end
 
 function Base.displayable(d::JuliaDisplay, mime::AbstractString)
@@ -219,6 +219,8 @@ the application engine, the second is a string containing a path to the local QM
 @doc "Equivalent to `QQuickView::show`" show
 @doc "Equivalent to `QQuickView::engine`" engine
 @doc "Equivalent to `QQuickView::rootObject`" root_object
+
+@doc "Equivalent to `QByteArray::toString`" to_string
 
 @doc """
 Equivalent to `QQmlComponent::setData`. Use this to set the QML code for a QQmlComponent from a Julia string literal.
