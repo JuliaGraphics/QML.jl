@@ -64,6 +64,19 @@ JULIA_CPP_MODULE_BEGIN(registry)
         e->quit();
         jl_error("Error loading QML");
       }
+    })
+    .method("load_data", [] (QQmlApplicationEngine* e, const QByteArray &data)
+    {
+      bool success = false;
+      QUrl url = QUrl();
+      auto conn = QObject::connect(e, &QQmlApplicationEngine::objectCreated, [&] (QObject* obj, const QUrl& url) { success = (obj != nullptr); });
+      e->loadData(data, url);
+      QObject::disconnect(conn);
+      if(!success)
+      {
+        e->quit();
+        jl_error("Error loading QML");
+      }
     });
 
   qml_module.method("qt_prefix_path", []() { return QLibraryInfo::location(QLibraryInfo::PrefixPath); });
@@ -180,6 +193,6 @@ JULIA_CPP_MODULE_BEGIN(registry)
   qml_module.method("getindex", [](const QVariantMap& m, const QString& key) { return m[key]; });
 
   // Exports:
-  qml_module.export_symbols("QQmlContext", "set_context_property", "root_context", "load", "qt_prefix_path", "set_source", "engine", "QByteArray", "to_string", "QQmlComponent", "set_data", "create", "QQuickItem", "content_item", "JuliaObject", "QTimer", "context_property", "emit", "JuliaDisplay", "init_application", "qmlcontext", "init_qmlapplicationengine", "init_qmlengine", "init_qquickview", "exec", "exec_async", "ListModel", "addrole", "setconstructor", "removerole", "setrole", "QVariantMap");
+  qml_module.export_symbols("QQmlContext", "set_context_property", "root_context", "load", "load_data", "qt_prefix_path", "set_source", "engine", "QByteArray", "to_string", "QQmlComponent", "set_data", "create", "QQuickItem", "content_item", "JuliaObject", "QTimer", "context_property", "emit", "JuliaDisplay", "init_application", "qmlcontext", "init_qmlapplicationengine", "init_qmlengine", "init_qquickview", "exec", "exec_async", "ListModel", "addrole", "setconstructor", "removerole", "setrole", "QVariantMap");
   qml_module.export_symbols("QPainter", "device", "width", "height", "logicalDpiX", "logicalDpiY", "QQuickWindow", "effectiveDevicePixelRatio", "window", "JuliaPaintedItem", "update");
 JULIA_CPP_MODULE_END

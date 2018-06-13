@@ -212,6 +212,11 @@ You can now use `my_property` in QML and every time `set_context_property` is ca
 Equivalent to [`&QQmlApplicationEngine::load`](http://doc.qt.io/qt-5/qqmlapplicationengine.html#load-1). The first argument is
 the application engine, the second is a string containing a path to the local QML file to load.
 """ load
+@doc """
+Equivalent to [`&QQmlApplicationEngine::loadData`](http://doc.qt.io/qt-5/qqmlapplicationengine.html#loadData). Use this to
+load QML from a string. The first argument is the application engine, the second is either a `QML.QByteArray` or a `String`
+containing QML to load.
+""" load_data
 
 @doc "Equivalent to `QLibraryInfo::location(QLibraryInfo::PrefixPath)`" qt_prefix_path
 @doc "Equivalent to `QQuickWindow::contentItem`" content_item
