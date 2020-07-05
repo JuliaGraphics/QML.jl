@@ -15,7 +15,6 @@ using Observables
 using FileIO
 import Libdl
 using Requires
-using Fontconfig_jll: fonts_conf
 using ColorTypes
 
 const envfile = joinpath(dirname(dirname(@__FILE__)), "deps", "env.jl")
@@ -80,16 +79,6 @@ end
 function __init__()
   @initcxx
   FileIO.add_format(format"QML", (), ".qml")
-
-  if !haskey(ENV, "FONTCONFIG_FILE") && !haskey(ENV, "FONTCONFIG_PATH")
-    linux_fonts_conf = "/etc/fonts/fonts.conf"
-    if isfile(linux_fonts_conf)
-      ENV["FONTCONFIG_FILE"] = linux_fonts_conf
-      ENV["FONTCONFIG_PATH"] = dirname(linux_fonts_conf)
-    else
-      ENV["FONTCONFIG_FILE"] = fonts_conf
-    end
-  end
 
   @static if Sys.isapple()
     @require GR="28b8d3ca-fb5f-59d9-8090-bfdbd6d07a71" patchgr()
