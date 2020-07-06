@@ -3,7 +3,7 @@ using Test
 import QML
 using Documenter: doctest
 
-doctest(QML)
+doctest(QML, fix=true)
 
 excluded = ["runtests.jl", "qml", "include"]
 
