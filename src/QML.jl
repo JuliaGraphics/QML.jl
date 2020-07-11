@@ -619,7 +619,7 @@ function ListModel(a::AbstractVector{T}, addroles=true) where {T}
       for fname in fieldnames(T)
         push!(data.roles, string(fname))
         push!(data.getters, (x) -> getfield(x, fname))
-        push!(data.setters, (array, value, index) -> setfield!(array[index], fname, value))
+        push!(data.setters, (array, value, index) -> setproperty!(array[index], fname, value))
       end
       data.constructor = T
     else
@@ -628,6 +628,7 @@ function ListModel(a::AbstractVector{T}, addroles=true) where {T}
       push!(data.setters, defaultsetter)
     end
   end
+  propertynames
 
   return ListModel(data)
 end
