@@ -21,7 +21,7 @@ julia> quick_view = mktempdir() do folder
           }
           \""")
           quick_view = init_qquickview()
-          set_source(quick_view, QUrl(path))
+          set_source(quick_view, QUrlFromLocalFile(path))
           @assert content_item(quick_view) isa CxxPtr{QQuickItem}
           exec()
         end
@@ -73,7 +73,7 @@ julia> mktempdir() do folder
           quick_view = init_qquickview()
           context = root_context(engine(quick_view))
           set_context_property(context, "greeting", "Hello, World!")
-          set_source(quick_view, QUrl(path))
+          set_source(quick_view, QUrlFromLocalFile(path))
           QML.show(quick_view)
           exec()
         end
@@ -318,7 +318,7 @@ julia> mktempdir() do folder
           }
           \""")
           quick_view = init_qquickview()
-          set_source(quick_view, QUrl(path))
+          set_source(quick_view, QUrlFromLocalFile(path))
           QML.show(quick_view)
           exec()
         end

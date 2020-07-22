@@ -33,7 +33,7 @@ set_context_property(qmlcontext(), "fruitModel", fruitmodel)
 
 # Load QML after setting context properties, to avoid errors on initialization
 qml_file = joinpath(dirname(@__FILE__), "qml", "dynamiclist.qml")
-set_source(qview, QUrl(qml_file))
+set_source(qview, QUrlFromLocalFile(qml_file))
 QML.show(qview)
 
 # Run the application

@@ -9,7 +9,9 @@ ctx = root_context(QML.engine(qview))
 set_context_property(ctx, "hi", "Hi from Julia")
 
 # Load QML after setting context properties, to avoid errors
-set_source(qview, QUrl(qml_file))
+qmlurl = QUrlFromLocalFile(qml_file)
+println("Loading QQuickview QML from $(QML.toString(qmlurl))")
+set_source(qview, qmlurl)
 QML.show(qview)
 
 exec()

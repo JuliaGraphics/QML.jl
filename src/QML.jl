@@ -7,6 +7,7 @@ export QStringList, QVariantList
 export QPainter, device, width, height, logicalDpiX, logicalDpiY, QQuickWindow, effectiveDevicePixelRatio, window, JuliaPaintedItem
 export @emit, @qmlfunction, qmlfunction, load, QQmlPropertyMap
 export set_context_property
+export QUrlFromLocalFile
 
 # TODO: Document: init_application, init_qmlapplicationengine
 # TODO: Document painter: device, effectiveDevicePixelRatio, height, JuliaCanvas, JuliaPaintedItem, logicalDpiX, logicalDpiY, width, window
