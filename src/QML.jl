@@ -8,6 +8,7 @@ export QPainter, device, width, height, logicalDpiX, logicalDpiY, QQuickWindow, 
 export @emit, @qmlfunction, qmlfunction, load, QQmlPropertyMap
 export set_context_property
 export QUrlFromLocalFile
+export qputenv, qgetenv, qunsetenv
 
 # TODO: Document: init_application, init_qmlapplicationengine
 # TODO: Document painter: device, effectiveDevicePixelRatio, height, JuliaCanvas, JuliaPaintedItem, logicalDpiX, logicalDpiY, width, window
@@ -78,6 +79,10 @@ end
   end
 end
 
+@static if Sys.iswindows()
+  using Mesa_jll
+end
+
 function __init__()
   @initcxx
   FileIO.add_format(format"QML", (), ".qml")
@@ -87,6 +92,11 @@ function __init__()
   end
 
   @require Makie="ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" include(joinpath(@__DIR__, "makie_support.jl"))
+
+  # Make sure Qt can find the Mesa dll if it doesn't find a compatible OpenGL implementation
+  @static if Sys.iswindows()
+    qputenv("PATH", QByteArray(ENV["PATH"] * ";" * dirname(Mesa_jll.opengl32sw)))
+  end
 end
 
 # QString

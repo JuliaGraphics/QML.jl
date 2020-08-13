@@ -3,11 +3,9 @@ using Test
 import QML
 using Documenter: doctest
 
-doctest(QML, fix=true)
-
 excluded = ["runtests.jl", "qml", "include"]
 
-testfiles = filter(fname -> fname ∉ excluded, readdir())
+testfiles = filter(fname -> fname ∉ excluded, readdir(@__DIR__))
 
 @testset "QML tests" begin
   @testset "$f" for f in testfiles
@@ -15,3 +13,5 @@ testfiles = filter(fname -> fname ∉ excluded, readdir())
     include(f)
   end
 end
+
+doctest(QML, fix=true)
