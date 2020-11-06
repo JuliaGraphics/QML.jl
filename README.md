@@ -25,7 +25,7 @@ See https://barche.github.io/QML.jl/dev
 To run the included examples, execute:
 
 ```julia
-include(joinpath(Pkg.dir("QML"), "example", "runexamples.jl"))
+include(joinpath(dirname(pathof(QML)), "..", "example", "runexamples.jl"))
 ```
 
 The examples require some additional packages to be described by the manifest and project files in the examples directory, so from the examples directory you should
