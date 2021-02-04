@@ -1,15 +1,14 @@
 module MakieSupport
 
-using ..Makie
-using ..Makie.GLMakie.Colors
-using ..Makie.GLMakie.FixedPointNumbers
-using ..Makie.GLMakie.ModernGL
-using ..Makie.GLMakie.StaticArrays
-using ..Makie.GLMakie.LinearAlgebra
+using ..GLMakie
+using ..GLMakie.Colors
+using ..GLMakie.FixedPointNumbers
+using ..GLMakie.ModernGL
+using ..GLMakie.StaticArrays
+using ..GLMakie.LinearAlgebra
 using QML
 using CxxWrap
 
-const GLMakie = Makie.GLMakie
 const GLAbstraction = GLMakie.GLAbstraction
 using .GLAbstraction
 
