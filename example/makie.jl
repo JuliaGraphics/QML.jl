@@ -5,17 +5,19 @@ using CxxWrap
 using Observables
 using QML
 using Qt5QuickControls_jll
-using Makie
+using GLMakie
 
 const catangle = Observable(0.0)
-const cat = mesh(Makie.loadasset("cat.obj"), color = :blue)
+const scene = Scene()
+const cat = mesh(loadasset("cat.obj"), color = :blue)
 const lastrot = Ref(0.0)
 
 # Render function that takes a parameter t from a QML slider
 function render_function(screen)
-  rotate_cam!(cat, (catangle[] - lastrot[])*π/180, 0.0, 0.0)
+  # Rotation needs to be fixed later
+  # rotate_cam!(scene, (catangle[] - lastrot[]) * π/180, 0.0, 0.0)
   lastrot[] = catangle[]
-  display(screen, cat)
+  display(screen, scene)
 end
 
 loadqml(joinpath(dirname(@__FILE__), "qml", "makie.qml"),
