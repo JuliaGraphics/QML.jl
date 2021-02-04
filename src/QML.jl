@@ -71,7 +71,7 @@ function __init__()
   @initcxx
   FileIO.add_format(format"QML", (), ".qml")
 
-  @require Makie="ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a" include(joinpath(@__DIR__, "makie_support.jl"))
+  @require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a" include(joinpath(@__DIR__, "makie_support.jl"))
 
   # Make sure Qt can find the Mesa dll if it doesn't find a compatible OpenGL implementation
   @static if Sys.iswindows()
