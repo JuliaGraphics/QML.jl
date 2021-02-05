@@ -61,7 +61,7 @@ mutable struct QMLScreen <: GLMakie.GLScreen
       [
         enable_SSAO[] ? GLMakie.ssao_postprocessor(fb) : GLMakie.empty_postprocessor(),
         enable_FXAA[] ? GLMakie.fxaa_postprocessor(fb) : GLMakie.empty_postprocessor(),
-        GLMakie.to_screen_postprocessor(fb)
+        to_qmlscreen_postprocessor(fb)
       ],
       Dict{UInt64, RenderObject}(),
       Dict{UInt16, AbstractPlot}(),
@@ -133,9 +133,33 @@ function GLMakie.render_frame(screen::QMLScreen; resize_buffers=true)
 
   # transfer everything to the screen
   screen.postprocessors[3].render(screen)
-
-  QML.bind(screen.qmlfbo)
   return
+end
+
+# Slightly adapted from GLMakie/postprocessing.jl/to_screen_postprocessor
+function to_qmlscreen_postprocessor(framebuffer)
+  # draw color buffer
+  shader = LazyShader(
+    GLMakie.loadshader("postprocessing/fullscreen.vert"),
+    GLMakie.loadshader("postprocessing/copy.frag")
+  )
+  data = Dict{Symbol, Any}(
+    :color_texture => framebuffer.buffers[:color]
+  )
+  pass = RenderObject(data, shader, GLMakie.PostprocessPrerender(), nothing)
+  pass.postrenderfunction = () -> GLMakie.draw_fullscreen(pass.vertexarray.id)
+
+  full_render = screen -> begin
+    fb = screen.framebuffer
+    w, h = sizetuple(screen.qmlfbo)
+    # w, h = size(fb) # original from Makie
+
+    QML.bind(screen.qmlfbo) # Transfer everything to the QMLScreen
+    glViewport(0, 0, w, h)
+    glClear(GL_COLOR_BUFFER_BIT)
+    GLAbstraction.render(pass) # copy postprocess
+  end
+  GLMakie.PostProcessor([pass], full_render)
 end
 
 function Base.empty!(screen::QMLScreen)
