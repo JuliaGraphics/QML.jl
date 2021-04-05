@@ -17,7 +17,7 @@ function render_function(screen)
   display(screen, cat)
 end
 
-load(joinpath(dirname(@__FILE__), "qml", "makie.qml"),
+loadqml(joinpath(dirname(@__FILE__), "qml", "makie.qml"),
   cat = JuliaPropertyMap("angle" => catangle),
   render_callback = @safe_cfunction(render_function, Cvoid, (Any,))
 )

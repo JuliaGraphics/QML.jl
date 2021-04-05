@@ -47,7 +47,7 @@ end
 
 # Load QML after setting context properties, to avoid errors on initialization
 qml_file = joinpath(dirname(@__FILE__), "qml", "tableview.qml")
-load(qml_file, properties=JuliaPropertyMap("years" => years), nuclidesModel=nuclidesModel)
+loadqml(qml_file, properties=JuliaPropertyMap("years" => years), nuclidesModel=nuclidesModel)
 
 # Run the application
 exec()

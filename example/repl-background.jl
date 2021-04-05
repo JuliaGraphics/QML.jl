@@ -3,7 +3,7 @@ using QML
 qml_file = joinpath(dirname(@__FILE__), "qml", "repl-background.qml")
 
 @qmlfunction pushdisplay
-load(qml_file)
+loadqml(qml_file)
 exec_async()
 
 using GR

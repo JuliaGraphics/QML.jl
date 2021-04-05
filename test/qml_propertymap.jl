@@ -78,7 +78,7 @@ ob[] = expected_ob
 @test propmap["ob"][] == expected_ob
 
 # Load the QML file, setting the property map as context object
-load(qml_file; propmap=propmap)
+loadqml(qml_file; propmap=propmap)
 
 # Run the application
 exec()

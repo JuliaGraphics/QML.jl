@@ -106,7 +106,7 @@ function render()
 end
 
 # Pass the triangle as a context property
-load(joinpath(dirname(@__FILE__), "qml", "gltriangle.qml"),
+loadqml(joinpath(dirname(@__FILE__), "qml", "gltriangle.qml"),
     cornersModel=ListModel(corners),
     render_triangle=@safe_cfunction(render, Cvoid, ()))
 exec()

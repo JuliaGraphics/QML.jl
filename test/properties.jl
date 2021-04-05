@@ -20,5 +20,5 @@ end
 @qmlfunction check_property check_pi
 qmlfile = joinpath(dirname(@__FILE__), "qml", "properties.qml")
 
-load(qmlfile, properties=propmap)
+loadqml(qmlfile, properties=propmap)
 exec()

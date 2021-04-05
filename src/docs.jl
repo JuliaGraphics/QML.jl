@@ -162,7 +162,7 @@ julia> mktempdir() do folder
             }
           }
           \""")
-          load(path)
+          loadqml(path)
           exec()
         end
 
@@ -231,7 +231,7 @@ julia> mktempdir() do folder
             }
           }
           \""")
-          load(path; greeting = "Hello, World!")
+          loadqml(path; greeting = "Hello, World!")
           exec()
         end
 ```
@@ -365,7 +365,7 @@ julia> mktempdir() do folder
               }
           }
           \""")
-          load(path, timer=QTimer())
+          loadqml(path, timer=QTimer())
           exec()
         end
 ```

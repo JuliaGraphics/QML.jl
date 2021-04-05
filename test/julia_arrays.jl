@@ -47,7 +47,7 @@ custom_list = [ListElem("a",1), ListElem("b", 2)]
 custom_model = ListModel(custom_list)
 
 @qmlfunction get_array
-load(qml_file,
+loadqml(qml_file,
   arrays=arrays,
   array_model=array_model,
   array_model2=array_model2,

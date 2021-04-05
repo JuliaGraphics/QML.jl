@@ -37,7 +37,7 @@ end
 @qmlfunction plotsin init_backend
 
 qml_file = joinpath(dirname(@__FILE__), "qml", "plot.qml")
-load(qml_file)
+loadqml(qml_file)
 
 # Run the application
 exec()

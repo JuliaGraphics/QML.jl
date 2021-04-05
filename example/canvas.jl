@@ -40,7 +40,7 @@ function paint_circle(buffer)
     return
 end
 
-load(qmlfile,
+loadqml(qmlfile,
      parameters=JuliaPropertyMap("diameter" => diameter),
      paint_cfunction = CxxWrap.@safe_cfunction(paint_circle, Cvoid, 
                                                (Array{UInt32,1}, Int32, Int32)))

@@ -17,7 +17,7 @@ on(x) do px
   nb_moves[] += 1
 end
 
-load(qmlfile, position=JuliaPropertyMap("x" => x, "y" =>y))
+loadqml(qmlfile, position=JuliaPropertyMap("x" => x, "y" =>y))
 exec()
 
 """

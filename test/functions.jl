@@ -71,7 +71,7 @@ set_state2 = TestModuleFunction.set_state2
 qmlfunction("unexported_return_two", UnExported.return_two)
 qmlfunction("unexported_check", UnExported.check)
 
-load(joinpath(dirname(@__FILE__), "qml", "functions.qml"))
+loadqml(joinpath(dirname(@__FILE__), "qml", "functions.qml"))
 exec()
 
 @test typeof(call_results1[1]) == Bool

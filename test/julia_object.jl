@@ -40,7 +40,7 @@ qml_file = joinpath(dirname(@__FILE__), "qml", "julia_object.qml")
 observed_object = Observable(JuliaTestType(0,InnerType(0.0)))
 @qmlfunction modify_julia_object replace_julia_object julia_object_check geta getx logx
 
-load(qml_file, objects=JuliaPropertyMap("julia_object" => JuliaTestType(1, InnerType(2.0)), "observed_object" => observed_object))
+loadqml(qml_file, objects=JuliaPropertyMap("julia_object" => JuliaTestType(1, InnerType(2.0)), "observed_object" => observed_object))
 
 # Run the application
 exec()

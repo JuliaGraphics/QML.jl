@@ -17,7 +17,7 @@ end
 qml_file = joinpath(dirname(@__FILE__), "qml", "grid.qml")
 
 # create the app, with cols and emojiModel exposed as QML context properties
-load(qml_file, cols=3, emojiModel=ListModel(emoji))
+loadqml(qml_file, cols=3, emojiModel=ListModel(emoji))
 
 # Start the GUI
 exec()

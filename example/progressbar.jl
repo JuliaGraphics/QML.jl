@@ -135,7 +135,7 @@ end
 simtypes = ListModel(first.(simulation_types))
 
 # All arguments after qmlfile are context properties:
-load(
+loadqml(
   qmlfile,
   timer=timer,
   simulationTypes=simtypes,

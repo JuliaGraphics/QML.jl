@@ -10,7 +10,7 @@ on(output) do x
   println("Output changed to ", x)
 end
 
-load(qml_file, observables = JuliaPropertyMap("input" => input, "output" => output))
+loadqml(qml_file, observables = JuliaPropertyMap("input" => input, "output" => output))
 
 if isinteractive()
   exec_async()

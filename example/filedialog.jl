@@ -19,5 +19,5 @@ end
 
 @qmlfunction singlefile multifile
 
-load(joinpath(dirname(Base.source_path()), "qml", "filedialog.qml"))
+loadqml(joinpath(dirname(Base.source_path()), "qml", "filedialog.qml"))
 exec()

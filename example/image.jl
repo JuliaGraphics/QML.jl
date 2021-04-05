@@ -9,7 +9,7 @@ function test_display(d::JuliaDisplay)
 end
 @qmlfunction test_display
 
-load(joinpath(dirname(@__FILE__), "qml", "image.qml"))
+loadqml(joinpath(dirname(@__FILE__), "qml", "image.qml"))
 
 
 # Run the application

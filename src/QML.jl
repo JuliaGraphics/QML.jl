@@ -1,7 +1,7 @@
 module QML
 
 export QVariant, QString, QUrl
-export QQmlContext, root_context, load, qt_prefix_path, set_source, engine, QByteArray, to_string, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, init_application, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, ListModel, addrole, setconstructor, removerole, setrole, roles, QVariantMap
+export QQmlContext, root_context, loadqml, qt_prefix_path, set_source, engine, QByteArray, to_string, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, init_application, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, ListModel, addrole, setconstructor, removerole, setrole, roles, QVariantMap
 export JuliaPropertyMap
 export QStringList, QVariantList
 export QPainter, device, width, height, logicalDpiX, logicalDpiY, QQuickWindow, effectiveDevicePixelRatio, window, JuliaPaintedItem
@@ -48,19 +48,24 @@ function load_qml(qmlfilename, engine)
 end
 
 """
-    function load(qml_file::String; properties...)
+    function loadqml(qmlfilename; properties...)
 
 Load a QML file, creating a [`QML.QQmlApplicationEngine`](@ref), and setting the context
 `properties` supplied in the keyword arguments. Will create and return a
 `QQmlApplicationEngine`. See the example for [`QML.QQmlApplicationEngine`](@ref).
 """
-function FileIO.load(f::FileIO.File{format"QML"}; kwargs...)
+function loadqml(qmlfilename; kwargs...)
   qml_engine = init_qmlapplicationengine()
   ctx = root_context(CxxRef(qml_engine))
   for (key,value) in kwargs
     set_context_property(ctx, String(key), value)
   end
-  return load_qml(filename(f), qml_engine)
+  return load_qml(qmlfilename, qml_engine)
+end
+
+function FileIO.load(f::FileIO.File{format"QML"}; kwargs...)
+  Base.depwarn("load(qmlfile;...) is deprecated, please use loadqml(qmlfile;...)", :load)
+  return loadqml(filename(f); kwargs...)
 end
 
 @static if Sys.iswindows()
@@ -215,7 +220,7 @@ julia> mktempdir() do folder
            }
          }
          \""")
-         load(path; observables = JuliaPropertyMap("output" => output))
+         loadqml(path; observables = JuliaPropertyMap("output" => output))
          exec()
        end
 ```
@@ -364,7 +369,7 @@ julia> mktempdir() do folder
               }
           }
           \""")
-          load(path)
+          loadqml(path)
           exec()
         end
 ```
@@ -407,7 +412,7 @@ julia> mktempdir() do folder
             }
           }
           \""")
-          load(path)
+          loadqml(path)
           exec()
         end
 ```
@@ -595,7 +600,7 @@ julia> mktempdir() do folder
               }
             }
           \""")
-          load(path; fruits = fruits)
+          loadqml(path; fruits = fruits)
           exec()
         end
 ```
@@ -675,7 +680,7 @@ julia> mktempdir() do folder
             }
           }
           \""")
-          load(path; array_model = array_model)
+          loadqml(path; array_model = array_model)
           exec()
         end
 
@@ -794,7 +799,7 @@ julia> mktempdir() do folder
             }
           }
           \""")
-          load(path; array_model = array_model)
+          loadqml(path; array_model = array_model)
           exec()
         end
 ```

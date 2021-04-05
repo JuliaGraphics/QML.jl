@@ -111,7 +111,7 @@ onany(amplitude, frequency, invert_sin, diameter) do amp, freq, inv, dia
     end
 end
 
-load(qmlfile,
+loadqml(qmlfile,
      parameters = JuliaPropertyMap(
      "invert_sin"       => invert_sin,
      "amplitude"        => amplitude,

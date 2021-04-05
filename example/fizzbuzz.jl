@@ -36,5 +36,5 @@ end
 @qmlfunction do_fizzbuzz
 
 qmlfile = joinpath(dirname(Base.source_path()), "qml", "fizzbuzz.qml")
-load(qmlfile, fizzbuzz=JuliaPropertyMap("message" => Observable(""), "count" => 0, "success" => false))
+loadqml(qmlfile, fizzbuzz=JuliaPropertyMap("message" => Observable(""), "count" => 0, "success" => false))
 exec()

@@ -54,7 +54,7 @@ function paint_square(buffer::Array{UInt32, 1}, width32::Int32, height32::Int32)
     return
 end
 
-load(qmlfile,
+loadqml(qmlfile,
      parameters=JuliaPropertyMap("diameter" => diameter, "alpha" => alpha),
      circle_cfunction = CxxWrap.@safe_cfunction(paint_circle, Cvoid, (Array{UInt32,1}, Int32, Int32)),
      square_cfunction = CxxWrap.@safe_cfunction(paint_square, Cvoid, (Array{UInt32,1}, Int32, Int32)))
