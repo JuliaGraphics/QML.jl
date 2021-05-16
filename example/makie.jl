@@ -6,16 +6,16 @@ using Observables
 using QML
 using Qt5QuickControls_jll
 using GLMakie
+using FileIO
 
 const catangle = Observable(0.0)
-const scene = Scene()
-const cat = mesh(loadasset("cat.obj"), color = :blue)
+const cat = mesh(load(assetpath("cat.obj")), color = :blue)
+const scene = cat.figure.scene
 const lastrot = Ref(0.0)
 
 # Render function that takes a parameter t from a QML slider
 function render_function(screen)
-  # Rotation needs to be fixed later
-  # rotate_cam!(scene, (catangle[] - lastrot[]) * π/180, 0.0, 0.0)
+  rotate_cam!(scene.children[1], (catangle[] - lastrot[]) * π/180, 0.0, 0.0)
   lastrot[] = catangle[]
   display(screen, scene)
 end

@@ -305,7 +305,7 @@ end
   storedvalue = jpm[key]
   newvalue = value(variantvalue)
   if storedvalue isa Observable
-    Observables.setexcludinghandlers(storedvalue, newvalue, x -> !(x isa QmlPropertyUpdater))
+    Observables.setexcludinghandlers!(storedvalue, newvalue)
   else
     jpm.dict[key] = newvalue
   end

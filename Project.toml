@@ -14,10 +14,10 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 jlqml_jll = "6b5019fb-a83d-5b4e-a9f7-678a36c28df7"
 
 [compat]
-ColorTypes = "0.10"
+ColorTypes = "0.11"
 CxxWrap = "0.11"
 MacroTools = "0.5"
-Observables = "0.3"
+Observables = "0.4"
 Requires = "1.0"
 jlqml_jll = "0.2"
 julia = "1.6"
