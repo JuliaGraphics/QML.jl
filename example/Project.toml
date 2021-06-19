@@ -1,7 +1,0 @@
-[deps]
-CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
-FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
-Observables = "510215fc-4207-5dde-b226-833fc4488ee2"
-QML = "2db162a6-7e43-52c3-8d84-290c1c42d82a"
-Qt5QuickControls_jll = "e4aecf45-a397-53cc-864f-87db395e0248"
