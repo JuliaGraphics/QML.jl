@@ -16,6 +16,8 @@ end
 
 doctest(QML, fix=true)
 
+if !Sys.iswindows() #Skip on Windows because OpenGL doesn't work on Github CI
+
 import LibGit2
 
 withenv("JULIA_LOAD_PATH" => nothing, "JULIA_GR_PROVIDER" => "BinaryBuilder") do
@@ -38,4 +40,6 @@ withenv("JULIA_LOAD_PATH" => nothing, "JULIA_GR_PROVIDER" => "BinaryBuilder") do
     end
     println(pwd())
   end
+end
+
 end
