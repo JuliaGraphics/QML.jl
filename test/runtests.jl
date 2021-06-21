@@ -18,7 +18,7 @@ doctest(QML, fix=true)
 
 import LibGit2
 
-withenv("JULIA_LOAD_PATH" => nothing) do
+withenv("JULIA_LOAD_PATH" => nothing, "JULIA_GR_PROVIDER" => "BinaryBuilder") do
   mktempdir() do tmpd
     cd(tmpd) do
       examplesdir = mkdir("QmlJuliaExamples")
