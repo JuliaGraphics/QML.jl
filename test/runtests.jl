@@ -28,6 +28,8 @@ withenv("JULIA_LOAD_PATH" => nothing) do
         updatecommand = """
           using Pkg
           pkg"develop $qmlpath"
+          pkg"instantiate"
+          pkg"precompile"
           pkg"status"
         """
         run(`$(Base.julia_cmd()) --project -e "$updatecommand"`)
