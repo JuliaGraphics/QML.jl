@@ -43,4 +43,4 @@ jobs:
       - uses: domluna/JuliaFormatter-action@master
         with:
           args: -v .
-          continue-on-error: true
+        continue-on-error: true

@@ -1,5 +1,6 @@
 module QML
 
+using ColorTypes: include
 export QVariant, QString, QUrl
 export QQmlContext, root_context, loadqml, qt_prefix_path, set_source, engine, QByteArray, to_string, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, init_application, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, ListModel, addrole, setconstructor, removerole, setrole, roles, QVariantMap
 export JuliaPropertyMap
@@ -877,5 +878,6 @@ function exec_async()
 end
 
 include("docs.jl")
+include("runexamples.jl")
 
 end
