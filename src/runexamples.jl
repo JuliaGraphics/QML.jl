@@ -2,6 +2,10 @@ function runexamples()
   ENV["QT_LOGGING_RULES"] = "qt.scenegraph.time.renderloop=true;"
   excluded = String[]
 
+  if Sys.iswindows() && get(ENV, "CI", "false") == "true"
+    push!(excluded, "gltriangle.jl") # CI OpenGL is too old
+  end
+
   renderstring = "Frame rendered"
 
   function errorfilter(line)
