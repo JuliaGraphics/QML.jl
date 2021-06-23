@@ -4,6 +4,7 @@ function runexamples()
 
   if Sys.iswindows() && get(ENV, "CI", "false") == "true"
     push!(excluded, "gltriangle.jl") # CI OpenGL is too old
+    push!(excluded, "makie.jl") # CI OpenGL is too old
   end
 
   renderstring = "Frame rendered"
