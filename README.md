@@ -24,16 +24,6 @@ A set of examples is available in the repository at https://github.com/barche/Qm
 
 ## Basic usage
 
-### Running examples
-To run the included examples, execute:
-
-```julia
-include(joinpath(dirname(pathof(QML)), "..", "example", "runexamples.jl"))
-```
-
-The examples require some additional packages to be described by the manifest and project files in the examples directory, so from the examples directory you should
-start Julia with `julia --project` and then run `instantiate` from the pkg shell.
-
 ### Loading a QML file
 We support three methods of loading a QML file: `QQmlApplicationEngine`, `QQuickView` and `QQmlComponent`. These behave equivalently to the corresponding Qt classes.
 #### QQmlApplicationEngine
