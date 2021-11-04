@@ -169,10 +169,10 @@ function Base.empty!(screen::QMLScreen)
 end
 
 function Base.display(screen::QMLScreen, scene::Scene)
-  scene.events.window_area[] = AbstractPlotting.IRect(0,0,sizetuple(screen.qmlfbo)...)
+  scene.events.window_area[] = Makie.IRect(0,0,sizetuple(screen.qmlfbo)...)
   empty!(screen)
   insertplots!(screen, scene)
-  AbstractPlotting.update!(scene)
+  Makie.update!(scene)
   GLMakie.render_frame(screen)
   return
 end
