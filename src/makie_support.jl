@@ -44,7 +44,7 @@ mutable struct QMLScreen <: GLMakie.GLScreen
   renderlist::Vector{Tuple{ZIndex, ScreenID, RenderObject}}
   postprocessors::Vector{GLMakie.PostProcessor}
   cache::Dict{UInt64, RenderObject}
-  cache2plot::Dict{UInt16, AbstractPlot}
+  cache2plot::Dict{UInt32, AbstractPlot}
   framecache::Matrix{RGB{N0f8}}
   framebuffer::GLMakie.GLFramebuffer
   # render_tick::Observable{Nothing}
@@ -60,11 +60,12 @@ mutable struct QMLScreen <: GLMakie.GLScreen
       Tuple{ZIndex, ScreenID, RenderObject}[],
       [
         enable_SSAO[] ? GLMakie.ssao_postprocessor(fb) : GLMakie.empty_postprocessor(),
+        GLMakie.OIT_postprocessor(fb),
         enable_FXAA[] ? GLMakie.fxaa_postprocessor(fb) : GLMakie.empty_postprocessor(),
         to_qmlscreen_postprocessor(fb)
       ],
       Dict{UInt64, RenderObject}(),
-      Dict{UInt16, AbstractPlot}(),
+      Dict{UInt32, AbstractPlot}(),
       Matrix{RGB{N0f8}}(undef, fbosize),
       fb,
       # Observable(nothing),
@@ -107,8 +108,9 @@ function GLMakie.render_frame(screen::QMLScreen; resize_buffers=true)
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)
   glStencilMask(0x00)
-  GLAbstraction.render(screen, true, true)
-
+  GLAbstraction.render(screen) do robj
+    return !Bool(robj[:transparency][]) && Bool(robj[:ssao][])
+  end
   # SSAO
   screen.postprocessors[1].render(screen)
 
@@ -117,23 +119,40 @@ function GLMakie.render_frame(screen::QMLScreen; resize_buffers=true)
   glEnable(GL_STENCIL_TEST)
   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)
   glStencilMask(0x00)
-  GLAbstraction.render(screen, true, false)
+  # render all non ssao
+  GLAbstraction.render(screen) do robj
+    return !Bool(robj[:transparency][]) && !Bool(robj[:ssao][])
+  end
   glDisable(GL_STENCIL_TEST)
 
-  # FXAA
-  screen.postprocessors[2].render(screen)
-
-  # no FXAA primary render
-  glDrawBuffers(2, [GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1])
+  # TRANSPARENT RENDER
+  # clear sums to 0
+  glDrawBuffer(GL_COLOR_ATTACHMENT2)
+  glClearColor(0, 0, 0, 0)
+  glClear(GL_COLOR_BUFFER_BIT)
+  # clear alpha product to 1
+  glDrawBuffer(GL_COLOR_ATTACHMENT3)
+  glClearColor(1, 1, 1, 1)
+  glClear(GL_COLOR_BUFFER_BIT)
+  # draw
+  glDrawBuffers(3, [GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT3])
   glEnable(GL_STENCIL_TEST)
   glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE)
   glStencilMask(0x00)
-  GLAbstraction.render(screen, false)
+  # Render only transparent objects
+  GLAbstraction.render(screen) do robj
+      return Bool(robj[:transparency][])
+  end
   glDisable(GL_STENCIL_TEST)
 
-  # transfer everything to the screen
+  # TRANSPARENT BLEND
+  screen.postprocessors[2].render(screen)
+
+  # FXAA
   screen.postprocessors[3].render(screen)
-  return
+
+  # transfer everything to the screen
+  screen.postprocessors[4].render(screen)
 end
 
 # Slightly adapted from GLMakie/postprocessing.jl/to_screen_postprocessor
@@ -143,7 +162,7 @@ function to_qmlscreen_postprocessor(framebuffer)
     GLMakie.loadshader("postprocessing/fullscreen.vert"),
     GLMakie.loadshader("postprocessing/copy.frag")
   )
-  data = Dict{Symbol, Any}(
+  data = Dict{Symbol,Any}(
     :color_texture => framebuffer.buffers[:color]
   )
   pass = RenderObject(data, shader, GLMakie.PostprocessPrerender(), nothing)
@@ -159,7 +178,7 @@ function to_qmlscreen_postprocessor(framebuffer)
     glClear(GL_COLOR_BUFFER_BIT)
     GLAbstraction.render(pass) # copy postprocess
   end
-  GLMakie.PostProcessor([pass], full_render)
+  return GLMakie.PostProcessor(GLMakie.GLAbstraction.RenderObject[pass], full_render)
 end
 
 function Base.empty!(screen::QMLScreen)
@@ -172,7 +191,7 @@ function Base.display(screen::QMLScreen, scene::Scene)
   scene.events.window_area[] = Makie.IRect(0,0,sizetuple(screen.qmlfbo)...)
   empty!(screen)
   insertplots!(screen, scene)
-  Makie.update!(scene)
+  # Makie.update!(scene)
   GLMakie.render_frame(screen)
   return
 end
