@@ -29,6 +29,16 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      # Mesa install copied from https://github.com/microsoft/OpticSim.jl
+      - name: Install Mesa (Windows only)
+        if: runner.os == 'Windows'
+        shell: cmd
+        working-directory: ${{ steps.setup-julia.outputs.julia-bindir }}
+        run: |
+          curl.exe -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/21.3.5/mesa3d-21.3.5-release-msvc.7z
+          "C:\Program Files\7-Zip\7z.exe" x mesa.7z
+          mklink opengl32.dll "x64\opengl32.dll"
+          mklink libglapi.dll "x64\libglapi.dll"
       - name: Cache artifacts
         uses: actions/cache@v1
         env:
