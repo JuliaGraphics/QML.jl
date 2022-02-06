@@ -15,17 +15,17 @@ jlqml_jll = "6b5019fb-a83d-5b4e-a9f7-678a36c28df7"
 
 [compat]
 ColorTypes = "0.11"
-CxxWrap = "0.11"
+CxxWrap = "0.12"
 MacroTools = "0.5"
 Observables = "0.4"
 Requires = "1.0"
-jlqml_jll = "0.2"
+jlqml_jll = "0.3"
 julia = "1.6"
 
 [extras]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
-LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Qt5QuickControls_jll = "e4aecf45-a397-53cc-864f-87db395e0248"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
