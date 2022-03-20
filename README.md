@@ -29,7 +29,7 @@ To run the examples, execute the following code block in the Julia REPL.
 
 ```julia
 # Alternatively, execute the git command directly in the shell or download the zip file
-isdir("QmlJuliaExamples") && run(`git clone --depth 1 https://github.com/barche/QmlJuliaExamples`)
+isdir("QmlJuliaExamples") || run(`git clone --depth 1 https://github.com/barche/QmlJuliaExamples`)
 cd("QmlJuliaExamples")
 
 # As an alternative to next three lines,
