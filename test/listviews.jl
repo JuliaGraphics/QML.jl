@@ -15,9 +15,9 @@ myrole2(x::AbstractString) = lowercase(x)
 myrole2(x::Number) = Int(round(x))
 decorated2(x) = "---" * string(x) * "---"
 
-array_model = ListModel(julia_array)
+array_model = JuliaItemModel(julia_array)
 addrole(array_model, "string", string)
-array_model2 = ListModel(julia_array)
+array_model2 = JuliaItemModel(julia_array)
 addrole(array_model2, "myrole", myrole2, setindex!)
 addrole(array_model2, "decorated", decorated2)
 setconstructor(array_model2, identity)
@@ -29,7 +29,7 @@ mutable struct TableItem
 end
 
 tableitems = [TableItem(1,2,3), TableItem(4,5,6)]
-tablemodel = ListModel(tableitems)
+tablemodel = JuliaItemModel(tableitems)
 
 setfirstmodelrow() = (tablemodel[1] = TableItem(7,8,9))
 

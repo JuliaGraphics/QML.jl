@@ -16,36 +16,36 @@ Item {
   Timer {
     interval: 200; running: true; repeat: false
     onTriggered: {
-      var a = Julia.get_array()
-      verify_array(a)
-      verify_array(arrays.julia_array)
+      var a = Julia.get_array();
+      verify_array(a);
+      verify_array(arrays.julia_array);
 
       if(arrays.int_array[0] != 1 || arrays.int_array[1] != 2 || arrays.int_array[2] != 3) {
-        console.log("Bad int array: ", arrays.int_array)
-        throw "Error verifying int array"
+        console.log("Bad int array: ", arrays.int_array);
+        throw "Error verifying int array";
       }
 
-      arrays.ob_array = [7,8,9]
+      arrays.ob_array = [7,8,9];
 
-      array_model2.setProperty(2, "myrole", "TEST2")
-      array_model2.append({"myrole":"Added"})
-      array_model2.append({"myrole":2})
-      array_model2.append({"myrole":2})
-      array_model2.setProperty(5, "myrole", 3)
+      array_model2.setData(array_model2.index(2, 0), "TEST2", roles.myrole);
+      array_model2.appendRow({"myrole":"Added"});
+      array_model2.appendRow({"myrole":2});
+      array_model2.appendRow({"myrole":2});
+      array_model2.setData(array_model2.index(5, 0), 3, roles.myrole);
 
-      array_model2.remove(1)
+      array_model2.removeRow(1);
 
-      move_model.move(2,5,3)
+      move_model.moveRow(2,5,3);
 
-      resize_typed_model.remove(2)
-      resize_typed_model.move(3,0,1)
+      resize_typed_model.removeRow(2);
+      resize_typed_model.moveRow(3,0,1);
 
-      insert_model.insert(2,[3])
+      insert_model.insertRow(2,[3]);
 
-      clear_model.clear()
+      clear_model.clear();
 
-      custom_model.setProperty(1, "b", 5)
-      custom_model.append({"b":10, "a":"ten"})
+      custom_model.setData(custom_model.index(1,0), 5, roles.b);
+      custom_model.appendRow({"b":10, "a":"ten"});
 
       Qt.quit()
     }

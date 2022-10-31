@@ -459,7 +459,7 @@ Equivalent to `QQuickView::show`. See example for [`QQuickView`](@ref).
 show
 
 """
-    function to_string(data::QByteArray)
+    function string(data::QByteArray)
 
 Equivalent to `QByteArray::toString`. Use to convert a [`QByteArray`](@ref) back to a
 string.
@@ -467,8 +467,8 @@ string.
 ```jldoctest
 julia> using QML
 
-julia> to_string(QByteArray("Hello, World!"))
+julia> string(QByteArray("Hello, World!"))
 "Hello, World!"
 ```
 """
-to_string
+string

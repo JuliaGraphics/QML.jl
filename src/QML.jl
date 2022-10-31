@@ -1,10 +1,10 @@
 module QML
 
 export QVariant, QString, QUrl
-export QQmlContext, root_context, loadqml, qt_prefix_path, set_source, engine, QByteArray, to_string, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, init_application, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, QVariantMap
+export QQmlContext, root_context, loadqml, qt_prefix_path, set_source, engine, QByteArray, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, init_application, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, QVariantMap
 export JuliaPropertyMap
 export QStringList, QVariantList
-export ListModel, TableModel, addrole, setconstructor, removerole, setrole, roles
+export JuliaItemModel, addrole, setconstructor, roles, roleindex
 export QPainter, device, width, height, logicalDpiX, logicalDpiY, QQuickWindow, effectiveDevicePixelRatio, window, JuliaPaintedItem
 export @emit, @qmlfunction, qmlfunction, QQmlPropertyMap
 export set_context_property
@@ -119,7 +119,14 @@ end
 Base.convert(::Type{<:QString}, s::String) = QString(s)
 QString(u::QUrl) = toString(u)
 
+# QByteArray
+Base.convert(::Type{QByteArray}, s::AbstractString) = QByteArray(s)
+@cxxdereference Base.print(io::IO, x::QByteArray) = print(io, to_string(x))
+@cxxdereference Base.show(io::IO, x::QByteArray) = Base.show(io, to_string(x))
+
+# QVariant
 const QVariantList = QList{QVariant}
+const QVariantMap = QMap{QString,QVariant}
 
 # Conversion to the strongly-typed QVariant interface
 @inline QVariant(x) = QVariant(Any,x)
@@ -151,6 +158,7 @@ Base.convert(::Type{<:QVariant}, x::QVariant) = x
 
 @cxxdereference Base.show(io::IO, x::QVariant) = write(io, string("QVariant of type ", type(x), " with value ", value(x)))
 
+# QList
 Base.IndexStyle(::Type{<:QList}) = IndexLinear()
 Base.size(v::QList) = (Int(cppsize(v)),)
 Base.getindex(v::QList, i::Int) = cppgetindex(v,i-1)[]
@@ -161,6 +169,56 @@ function Base.push!(v::QList{T}, x) where {T}
 end
 Base.empty!(l::QList) = clear(l)
 Base.deleteat!(l::QList, i::Integer) = removeAt(l, i-1)
+
+# QHash
+Base.isempty(h::QHash) = empty(h)
+Base.length(h::QHash) = Int(cppsize(h))
+Base.haskey(h::QHash, key) = QML.contains(h, key)
+function Base.getindex(h::QHash{K,V}, key) where {K,V}
+  if !haskey(h,key)
+    throw(KeyError(key))
+  end
+  return cppgetindex(h, convert(K,key))[]
+end
+Base.setindex!(h::QHash{K,V}, val, key) where {K,V} = cppsetindex!(h, convert(V,val), convert(K,key))
+Base.empty!(h::QHash) = clear(h)
+Base.delete!(h::QHash{K,V}, key) where {K,V} = remove(h, convert(K,key))
+Base.:(==)(a::QHashIterator, b::QHashIterator) = iteratorisequal(a,b)
+function _qhash_iteration_tuple(h::QHash, state::QHashIterator)
+  if state == iteratorend(h)
+    return nothing
+  end
+  return (iteratorkey(state) => iteratorvalue(state), state)
+end
+Base.iterate(h::QHash) = _qhash_iteration_tuple(h, iteratorbegin(h))
+Base.iterate(h::QHash, state::QHashIterator) = _qhash_iteration_tuple(h, iteratornext(state))
+Base.values(h::QHash) = QML.values(h)
+Base.keys(h::QHash) = QML.keys(h)
+
+# QMap
+Base.isempty(h::QMap) = empty(h)
+Base.length(h::QMap) = Int(cppsize(h))
+Base.haskey(h::QMap, key) = QML.contains(h, key)
+function Base.getindex(h::QMap{K,V}, key) where {K,V}
+  if !haskey(h,key)
+    throw(KeyError(key))
+  end
+  return cppgetindex(h, convert(K,key))[]
+end
+Base.setindex!(h::QMap{K,V}, val, key) where {K,V} = cppsetindex!(h, convert(V,val), convert(K,key))
+Base.empty!(h::QMap) = clear(h)
+Base.delete!(h::QMap{K,V}, key) where {K,V} = remove(h, convert(K,key))
+Base.:(==)(a::QMapIterator, b::QMapIterator) = iteratorisequal(a,b)
+function _qmap_iteration_tuple(h::QMap, state::QMapIterator)
+  if state == iteratorend(h)
+    return nothing
+  end
+  return (iteratorkey(state) => iteratorvalue(state), state)
+end
+Base.iterate(h::QMap) = _qmap_iteration_tuple(h, iteratorbegin(h))
+Base.iterate(h::QMap, state::QMapIterator) = _qmap_iteration_tuple(h, iteratornext(state))
+Base.values(h::QMap) = QML.values(h)
+Base.keys(h::QMap) = QML.keys(h)
 
 # Helper to call a julia function
 function julia_call(f, argptr::Ptr{Cvoid})
@@ -190,7 +248,7 @@ mutable struct JuliaPropertyMap <: AbstractDict{String,Any}
     set_julia_value(result.propertymap, result)
     connect_value_changed(result.propertymap, result, on_value_changed)
     finalizer(result) do jpm
-      for k in keys(jpm.dict)
+      for k in Base.keys(jpm.dict)
         delete!(jpm, k) # Call delete on all keys to detach observable updates to QML
       end
     end
@@ -477,392 +535,7 @@ function Base.displayable(d::JuliaDisplay, mime::AbstractString)
   return false
 end
 
-struct ListModelFunctionUndefined <: Exception end
-defaultsetter(array, value, index) = throw(ListModelFunctionUndefined())
-defaultconstructor(roles...) = throw(ListModelFunctionUndefined())
-
-get_julia_data(model::QAbstractItemModel) = get_julia_data(get_model_data(model))
-
-mutable struct ListModelData
-  values::AbstractArray
-  roles::QStringList
-  getters::Vector{Any}
-  setters::Vector{Any}
-  constructor
-  customroles::Bool
-
-  function ListModelData(a::AbstractArray{T}, addroles) where {T}
-    roles = QStringList()
-    getters = []
-    setters = []
-    constructor = defaultconstructor
-    if addroles
-      if !isabstracttype(T) && !isempty(fieldnames(T))
-        for fname in fieldnames(T)
-          push!(roles, string(fname))
-          push!(getters, (x) -> getfield(x, fname))
-          push!(setters, (array, value, index) -> setproperty!(array[index], fname, value))
-        end
-        constructor = T
-      else
-        push!(roles, "text")
-        push!(getters, string)
-        push!(setters, defaultsetter)
-      end
-    end
-  
-    return new(a, roles, getters, setters, constructor, false)
-  end
-end
-
-rowcount(m::ListModelData) = Int32(Base.size(m.values,1))
-colcount(m::ListModelData) = Int32(Base.size(m.values,2))
-rolenames(m::ListModelData) = m.roles
-
-function rolegetter(m::ListModelData, role::Integer)
-  @assert length(rolenames(m)) == length(m.getters)
-  return m.getters[role]
-end
-
-function isvalidindex(values, row, col)
-  if row ∉ axes(values,1)
-    @warn "row $row is out of range for listmodel"
-    return false
-  end
-  if col ∉ axes(values,2)
-    @warn "column $col is out of range for listmodel"
-    return false
-  end
-  return true
-end
-
-function data(m::ListModelData, role::Integer, row::Integer, col::Integer)
-  if !isvalidindex(m.values, row, col)
-    return QVariant()
-  end
-  rolefunc = rolegetter(m, role)
-  return QVariant(rolefunc(m.values[row,col]))
-end
-
-@cxxdereference function setdata(m::ListModelData, val::QVariant, role::Integer, row::Integer, col::Integer)
-  if !isvalidindex(m.values, row, col)
-    return false
-  end
-
-  try
-    m.setters[role](m.values, value(val), row)
-    return true
-  catch e
-    rolename = rolenames(m)[role]
-    if e isa ListModelFunctionUndefined
-      @warn "No setter for role $rolename"
-    else
-      @warn "Error $e when setting value at row $row for role $rolename"
-    end
-    return false
-  end
-end
-
-@cxxdereference function append_list(m::ListModelData, args::QVariantList)
-  try
-    push!(m.values, m.constructor((value(x) for x in args)...))
-  catch e
-    @error "Error $(typeof(e)) when appending value to listmodel."
-  end
-end
-
-function remove(m::ListModelData, row::Integer)
-  if row ∉ axes(m.values,1)
-    @warn "row $row is out of range for listmodel"
-    return
-  end
-  deleteat!(m.values, row)
-end
-
-function move(m::ListModelData, from::Integer, to::Integer, nb::Integer)
-  @assert from < to
-
-  # Save elements to mov
-  removed_elems = m.values[from:from+nb-1]
-  # Shift elements that remain
-  m.values[from:to-1] .= m.values[(from:to-1).+nb]
-  # Place saved elements in to block
-  m.values[to:to+nb-1] .= removed_elems
-
-  return
-end
-
-clear(m::ListModelData) = empty!(m.values)
-Base.push!(m::ListModelData, val) = push!(m.values, val)
-
-"""
-    function ListModel(items::AbstractVector, addroles::Bool = true)
-
-Constructor for a ListModel. The `ListModel` type allows using data in QML views such as
-`ListView` and `Repeater`, providing a two-way synchronization of the data. A ListModel is
-constructed from a 1D Julia array. To use the model from QML, it can be exposed as a context
-attribute.
-
-A constructor (the `eltype`) and setter and getter "roles" based on the `fieldnames` of the
-`eltype` will be automatically created if `addroles` is `true`.
-
-If new elements need to be constructed from QML, a constructor can also be provided, using
-the [`setconstructor`](@ref) method. QML can pass a list of arguments to constructors.
-
-In Qt, each of the elements of a model has a series of roles, available as properties in the
-delegate that is used to display each item. The roles can be added using the
-[`addrole`](@ref) function.
-
-```jldoctest
-julia> using QML
-
-julia> mutable struct Fruit
-          name::String
-          cost::Float64
-        end
-
-julia> fruits = ListModel([Fruit("apple", 1.0), Fruit("orange", 2.0)]);
-
-julia> mktempdir() do folder
-          path = joinpath(folder, "main.qml")
-          write(path, \"""
-          import QtQuick
-          import QtQuick.Controls
-          import QtQuick.Layouts
-          ApplicationWindow {
-            visible: true
-            ListView {
-              model: fruits
-              anchors.fill: parent
-              delegate:
-                Row {
-                  Text {
-                    text: name
-                  }
-                  Button {
-                    text: "Sale"
-                    onClicked: cost = cost / 2
-                  }
-                  Button {
-                    text: "Duplicate"
-                    onClicked: fruits.append([name, cost])
-                  }
-                  Timer {
-                    running: true
-                    onTriggered: Qt.quit()
-                  }
-                }
-              }
-            }
-          \""")
-          loadqml(path; fruits = fruits)
-          exec()
-        end
-```
-"""
-ListModel(a::AbstractVector, addroles=true) = ListModel(ListModelData(a,addroles))
-TableModel(a::AbstractMatrix, addroles=true) = TableModel(ListModelData(a,addroles))
-
-"""
-    function roles(model::ListModel)
-
-See all roles defined for a [`ListModel`](@ref). See the example for [`addrole`](@ref).
-"""
-roles(lm::ListModel) = rolenames(get_julia_data(lm))
-
-"""
-    function addrole(model::ListModel, name::String, getter, [setter])
-
-Add your own `getter` (and optionally, `setter`) functions to a [`ListModel`](@ref) for use
-by QML. `setter` is optional, and if it is not provided the role will be read-only. `getter`
-will process an item before it is returned. The arguments of `setter` will be
-`collection, new_value, index` as in the standard `setindex!` function. If you would like to
-see the roles defined for a list, use [`roles`](@ref). To remove a role, use
-[`removerole`](@ref).
-
-```jldoctest
-julia> using QML
-
-julia> items = ["A", "B"];
-
-julia> array_model = ListModel(items, false);
-
-julia> addrole(array_model, "item", identity, setindex!)
-
-julia> roles(array_model)
-1-element QML.QStringListAllocated:
- "item"
-
-julia> mktempdir() do folder
-          path = joinpath(folder, "main.qml")
-          write(path, \"""
-          import QtQuick
-          import QtQuick.Controls
-          import QtQuick.Layouts
-          ApplicationWindow {
-            visible: true
-            ListView {
-              model: array_model
-              anchors.fill: parent
-              delegate: TextField {
-                placeholderText: item
-                onTextChanged: item = text;
-              }
-            }
-            Timer {
-              running: true
-              onTriggered: Qt.quit()
-            }
-          }
-          \""")
-          loadqml(path; array_model = array_model)
-          exec()
-        end
-
-julia> removerole(array_model, "item")
-```
-"""
-function addrole(lm::ListModel, name, getter, setter=defaultsetter)
-  modeldata = get_model_data(lm)
-  m = get_julia_data(modeldata)
-  if name ∈ rolenames(m)
-    @error "Role $name exists, aborting add"
-    return
-  end
-
-  if !m.customroles
-    empty!(m.roles)
-    empty!(m.getters)
-    empty!(m.setters)
-    m.customroles = true
-  end
-
-  push!(m.roles, name)
-  push!(m.getters, getter)
-  push!(m.setters, setter)
-
-  emit_roles_changed(modeldata)
-
-  return
-end
-
-function setrole(lm::ListModel, idx::Integer, name, getter, setter=defaultsetter)
-  modeldata = get_model_data(lm)
-  m = get_julia_data(modeldata)
-  if idx ∉ axes(rolenames(m),1)
-    @error "Listmodel index $idx is out of range, aborting setrole"
-  end
-
-  if name ∈ rolenames(m) && rolenames(m)[idx] != name
-    @error "Role $name exists, aborting setrole"
-    return
-  end
-
-  m.getters[idx] = getter
-  m.setters[idx] = setter
-
-  if rolenames(m)[idx] == name
-    emit_data_changed(modeldata, 0, length(lm), StdVector(Int32[idx]))
-  else
-    m.roles[idx] = name
-    emit_roles_changed(modeldata)
-  end
-end
-
-function removerole(lm::ListModel, idx::Integer)
-  modeldata = get_model_data(lm)
-  m = get_julia_data(modeldata)
-  if idx ∉ axes(rolenames(m),1)
-    @error "Request to delete non-existing role $idx, aborting"
-    return
-  end
-
-  deleteat!(m.roles, idx)
-  deleteat!(m.getters, idx)
-  deleteat!(m.setters, idx)
-
-  @assert length(m.roles) == length(m.getters)
-
-  emit_roles_changed(modeldata)
-end
-
-"""
-    function removerole(model::ListModel, name::AbstractString)
-
-Remove one of the [`roles`](@ref) from a [`ListModel`](@ref). See the example for
-[`addrole`](@ref).
-"""
-function removerole(lm::ListModel, name::AbstractString)
-  modeldata = get_model_data(lm)
-  m = get_julia_data(modeldata)
-  idx = findfirst(isequal(name), m.roles)
-
-  if isnothing(idx)
-    @error "Request to delete non-existing role $name, aborting"
-    return
-  end
-  removerole(lm,idx)
-end
-
-"""
-    function setconstructor(model::ListModel, constructor)
-
-Add a constructor to a [`ListModel`](@ref). The `constructor` will process `append`ed items
-before they are added. Note that you can simply pass a list of arguments from QML,
-and they will be interpret in Julia as positional arguments.
-
-```jldoctest
-julia> using QML
-
-julia> items = ["A", "B"];
-
-julia> array_model = ListModel(items, false);
-
-julia> setconstructor(array_model, uppercase);
-
-julia> mktempdir() do folder
-          path = joinpath(folder, "main.qml")
-          write(path, \"""
-          import QtQuick
-          import QtQuick.Controls
-          import QtQuick.Layouts
-          ApplicationWindow {
-            visible: true
-            Button {
-              text: "Add C"
-              onClicked: array_model.append(["c"])
-            }
-            Timer {
-              running: true
-              onTriggered: Qt.quit()
-            }
-          }
-          \""")
-          loadqml(path; array_model = array_model)
-          exec()
-        end
-```
-"""
-function setconstructor(lm::ListModel, constructor)
-  get_julia_data(lm).constructor = constructor
-end
-
-# ListModel Julia interface
-Base.getindex(lm::ListModel, idx::Int) = get_julia_data(lm).values[idx]
-function Base.setindex!(lm::ListModel, value, idx::Int)
-  modeldata = get_model_data(lm)
-  lmdata = get_julia_data(modeldata)
-  lmdata.values[idx] = value
-  emit_data_changed(modeldata, idx-1, 1, StdVector{Int32}())
-end
-Base.push!(lm::ListModel, val) = push_back(get_model_data(lm), val)
-Base.size(lm::ListModel) = Base.size(get_julia_data(lm).values)
-Base.length(lm::ListModel) = length(get_julia_data(lm).values)
-Base.delete!(lm::ListModel, i) = remove(get_model_data(lm), i-1)
-
-function force_model_update(lm::ListModel)
-  emit_data_changed(get_model_data(lm), 0, length(lm), StdVector{Int32}())
-end
+include("itemmodel.jl")
 
 global _async_timer
 

@@ -22,10 +22,10 @@ let jpm = JuliaPropertyMap()
   delete!(jpm, "testkey2")
   @test length(jpm) == 1
   @test_throws KeyError jpm["testkey2"]
-  @test QML.value(QML.value(jpm.propertymap, "testkey2")) == nothing
+  @test QML.value(QML.value(jpm.propertymap, "testkey2")) === nothing
   ob[] = 4
   @test ob[] == 4
-  @test QML.value(QML.value(jpm.propertymap, "testkey2")) == nothing
+  @test QML.value(QML.value(jpm.propertymap, "testkey2")) === nothing
 end
 
 # absolute path in case working dir is overridden

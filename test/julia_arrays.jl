@@ -26,12 +26,12 @@ myrole(x::AbstractString) = lowercase(x)
 myrole(x::Number) = Int(round(x))
 decorated(x) = "---" * string(x) * "---"
 
-array_model = ListModel(julia_array)
-array_model2 = ListModel(julia_array)
-move_model = ListModel(move_array)
-resize_typed_model = ListModel(resize_typed_array)
-insert_model = ListModel(insert_array)
-clear_model = ListModel(clear_array)
+array_model = JuliaItemModel(julia_array)
+array_model2 = JuliaItemModel(julia_array)
+move_model = JuliaItemModel(move_array)
+resize_typed_model = JuliaItemModel(resize_typed_array)
+insert_model = JuliaItemModel(insert_array)
+clear_model = JuliaItemModel(clear_array)
 
 addrole(array_model2, "myrole", myrole, setindex!)
 addrole(array_model2, "decorated", decorated)
@@ -44,18 +44,23 @@ mutable struct ListElem
 end
 
 custom_list = [ListElem("a",1), ListElem("b", 2)]
-custom_model = ListModel(custom_list)
+custom_model = JuliaItemModel(custom_list)
+
+roles = JuliaPropertyMap()
+roles["myrole"] = roleindex(array_model2, "myrole")
+roles["b"] = roleindex(custom_model, "b")
 
 @qmlfunction get_array
-loadqml(qml_file,
-  arrays=arrays,
-  array_model=array_model,
-  array_model2=array_model2,
-  move_model=move_model,
-  resize_typed_model=resize_typed_model,
-  insert_model=insert_model,
-  clear_model=clear_model,
-  custom_model=custom_model)
+loadqml(qml_file;
+  arrays,
+  array_model,
+  array_model2,
+  move_model,
+  resize_typed_model,
+  insert_model,
+  clear_model,
+  custom_model,
+  roles)
 
 arrays["ob_array"][] = [4,5,6]
 
