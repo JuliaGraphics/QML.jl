@@ -4,7 +4,7 @@ export QVariant, QString, QUrl
 export QQmlContext, root_context, loadqml, qt_prefix_path, set_source, engine, QByteArray, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, init_application, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, QVariantMap
 export JuliaPropertyMap
 export QStringList, QVariantList
-export JuliaItemModel, addrole, setconstructor, roles, roleindex
+export JuliaItemModel, addrole!, roles, roleindex, setgetter!, setsetter!
 export QPainter, device, width, height, logicalDpiX, logicalDpiY, QQuickWindow, effectiveDevicePixelRatio, window, JuliaPaintedItem
 export @emit, @qmlfunction, qmlfunction, QQmlPropertyMap
 export set_context_property

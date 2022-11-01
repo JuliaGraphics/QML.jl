@@ -237,14 +237,14 @@ The above signal is emitted from Julia using simply:
 #### ListModel
 The `ListModel` type allows using data in QML views such as `ListView` and `Repeater`, providing a two-way synchronization of the data. The [dynamiclist](http://doc.qt.io/qt-5/qtquick-views-listview-dynamiclist-qml.html) example from Qt has been translated to Julia in the [`dynamiclist.jl`](https://github.com/barche/QmlJuliaExamples/blob/master/dynamiclist.jl) example. As can be seen from [this commit](https://github.com/barche/QML.jl/commit/5f3e64579180fb913c47d92a438466b67098ee52#diff-2a0ca16de100fb8512e0f95c563c9f56c5d5844a756a6e3c8f2bd88476e264a5), the only required change was moving the model data from QML to Julia, otherwise the Qt-provided QML file is left unchanged.
 
-A ListModel is constructed from a 1D Julia array. In Qt, each of the elements of a model has a series of roles, available as properties in the delegate that is used to display each item. The roles can be added using the `addrole` function, for example:
+A ListModel is constructed from a 1D Julia array. In Qt, each of the elements of a model has a series of roles, available as properties in the delegate that is used to display each item. The roles can be added using the `addrole!` function, for example:
 ```julia
 julia_array = ["A", 1, 2.2]
 myrole(x::AbstractString) = lowercase(x)
 myrole(x::Number) = Int(round(x))
 
 array_model = ListModel(julia_array)
-addrole(array_model, "myrole", myrole, setindex!)
+addrole!(array_model, "myrole", myrole, setindex!)
 ```
 adds the role named `myrole` to `array_model`, using the function `myrole` to access the value. The `setindex!` argument is a function used to set the value for that role from QML. This argument is optional, if it is not provided the role will be read-only. The arguments of this setter are `collection, new_value, key` as in the standard `setindex!` function.
 

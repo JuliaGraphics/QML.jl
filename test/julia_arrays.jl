@@ -33,8 +33,8 @@ resize_typed_model = JuliaItemModel(resize_typed_array)
 insert_model = JuliaItemModel(insert_array)
 clear_model = JuliaItemModel(clear_array)
 
-addrole(array_model2, "myrole", myrole, setindex!)
-addrole(array_model2, "decorated", decorated)
+addrole!(array_model2, "myrole", myrole, setindex!)
+addrole!(array_model2, "decorated", decorated)
 setconstructor(array_model2, identity)
 setconstructor(insert_model, identity)
 

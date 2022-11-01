@@ -20,7 +20,7 @@ mutable struct ItemModelData{DataT}
 
   function ItemModelData{DataT}(modeldata::DataT) where {DataT}
     newmodel = new(modeldata, RoleNames(), FunctionCollection(), FunctionCollection(), defaultconstructor, defaultheaderdata, defaultsetheaderdata!)
-    newmodel.getters[DisplayRole] = string
+    setgetter!(newmodel, string, DisplayRole)
     return newmodel
   end
 end
@@ -272,7 +272,7 @@ the [`setconstructor`](@ref) method. QML can pass a list of arguments to constru
 
 In Qt, each of the elements of a model has a series of roles, available as properties in the
 delegate that is used to display each item. The roles can be added using the
-[`addrole`](@ref) function.
+[`addrole!`](@ref) function.
 
 ```jldoctest
 julia> using QML
@@ -332,12 +332,12 @@ function JuliaItemModel(a::DataT, addroles=true) where {DataT}
         rolename = string(fname)
         getter(x) = getfield(x, fname)
         setter(array, value, row, col) = setproperty!(array[row, col], fname, value)
-        addrole(modeldata, rolename, getter, setter)
+        addrole!(modeldata, rolename, getter, setter)
       end
       modeldata.constructor = T
     else
-      modeldata.getters[DisplayRole] = string
-      modeldata.setters[EditRole] = setindex!
+      setgetter!(modeldata, string, DisplayRole)
+      setsetter!(modeldata, setindex!, EditRole)
     end
   end
   return qtmodel
@@ -346,7 +346,7 @@ end
 """
     function roles(model::JuliaItemModel)
 
-See all roles defined for a [`JuliaItemModel`](@ref). See the example for [`addrole`](@ref).
+See all roles defined for a [`JuliaItemModel`](@ref). See the example for [`addrole!`](@ref).
 """
 roles(lm::JuliaItemModel) = rolenames(get_julia_data(lm))
 
@@ -368,8 +368,18 @@ function roleindex(m::ItemModelData, rolename)
 end
 roleindex(lm::JuliaItemModel, rolename) = roleindex(get_julia_data(lm), rolename)
 
+setgetter!(lm::JuliaItemModel, getter, roleidx) = setgetter!(get_julia_data(lm), getter, roleidx)
+function setgetter!(m::ItemModelData, getter, roleidx)
+  m.getters[roleidx] = getter
+end
+
+setsetter!(lm::JuliaItemModel, setter, roleidx) = setsetter!(get_julia_data(lm), setter, roleidx)
+function setsetter!(m::ItemModelData, setter, roleidx)
+  m.setters[roleidx] = setter
+end
+
 """
-    function addrole(model::JuliaItemModel, name::String, getter, [setter])
+    function addrole!(model::JuliaItemModel, name::String, getter, [setter])
 
 Add your own `getter` (and optionally, `setter`) functions to a [`JuliaItemModel`](@ref) for use
 by QML. `setter` is optional, and if it is not provided the role will be read-only. `getter`
@@ -384,7 +394,7 @@ julia> items = ["A", "B"];
 
 julia> array_model = JuliaItemModel(items, false);
 
-julia> addrole(array_model, "item", identity, setindex!)
+julia> addrole!(array_model, "item", identity, setindex!)
 
 julia> roles(array_model)
 1-element QML.QStringListAllocated:
@@ -417,8 +427,8 @@ julia> mktempdir() do folder
         end
 ```
 """
-addrole(lm::JuliaItemModel, name, getter, setter=nothing) = addrole(get_julia_data(lm), name, getter, setter)
-function addrole(m::ItemModelData, name, getter, setter)
+addrole!(lm::JuliaItemModel, name, getter, setter=nothing) = addrole!(get_julia_data(lm), name, getter, setter)
+function addrole!(m::ItemModelData, name, getter, setter)
   if hasrole(m, name)
     @error "Role $name exists, aborting add"
     return
@@ -427,9 +437,9 @@ function addrole(m::ItemModelData, name, getter, setter)
   roleidx = nextroleindex(m.roles)
 
   m.roles[roleidx] = name
-  m.getters[roleidx] = getter
+  setgetter!(m, getter, roleidx)
   if !isnothing(setter)
-    m.setters[roleidx] = setter
+    setsetter!(m, setter, roleidx)
   end
 
   return
