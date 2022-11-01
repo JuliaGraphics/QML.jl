@@ -123,12 +123,25 @@ function append_row!(m::ItemModelData, row::QVariantMap)
   if !isnothing(rowvec)
     append_row!(m, rowvec)
   else
-    newrow = deepcopy(colcount(m) == 1 ? m.values[end] : m.values[end,:])
-    push!(m.values, newrow)
-    for (rolename,val) in row
-      roleidx = roleindex(m, string(rolename))
-      rowidx = rowcount(m)
-      m.setters[roleidx](m.values, value(val), rowidx, 1)
+    if colcount(m) != 1
+      @warn "Can't append row $row, not all columns were found"
+    end
+    if rowcount(m) > 0
+      newrow = deepcopy(m.values[end]) 
+      push!(m.values, newrow)
+      for (rolename,val) in row
+        roleidx = roleindex(m, string(rolename))
+        rowidx = rowcount(m)
+        m.setters[roleidx](m.values, value(val), rowidx, 1)
+      end
+    else
+      ItemT = eltype(m.values)
+      fnames = fieldnames(ItemT)
+      constructorargs = []
+      for fname in string.(fnames)
+        push!(constructorargs, value(row[fname]))
+      end
+      push!(m.values, ItemT(constructorargs...))
     end
   end
 end
