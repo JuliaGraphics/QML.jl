@@ -20,7 +20,6 @@ addrole!(array_model, "string", string)
 array_model2 = JuliaItemModel(julia_array)
 addrole!(array_model2, "myrole", myrole2, setindex!)
 addrole!(array_model2, "decorated", decorated2)
-setconstructor(array_model2, identity)
 
 mutable struct TableItem
   a::Int32

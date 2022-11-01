@@ -1,5 +1,4 @@
 struct ListModelFunctionUndefined <: Exception end
-defaultconstructor(roles...) = throw(ListModelFunctionUndefined())
 
 const RoleNames = QHash{Int32,QByteArray}
 const FunctionCollection = Dict{Int32,Any}
@@ -14,12 +13,11 @@ mutable struct ItemModelData{DataT}
   roles::RoleNames
   getters::FunctionCollection
   setters::FunctionCollection
-  constructor::Union{Function,DataType}
   headerdata::Function
   setheaderdata::Function
 
   function ItemModelData{DataT}(modeldata::DataT) where {DataT}
-    newmodel = new(modeldata, RoleNames(), FunctionCollection(), FunctionCollection(), defaultconstructor, defaultheaderdata, defaultsetheaderdata!)
+    newmodel = new(modeldata, RoleNames(), FunctionCollection(), FunctionCollection(), defaultheaderdata, defaultsetheaderdata!)
     setgetter!(newmodel, string, DisplayRole)
     return newmodel
   end
@@ -277,11 +275,8 @@ Constructor for a JuliaItemModel. The `JuliaItemModel` type allows using data in
 constructed from a 1D Julia array. To use the model from QML, it can be exposed as a context
 attribute.
 
-A constructor (the `eltype`) and setter and getter "roles" based on the `fieldnames` of the
+Setter and getter "roles" based on the `fieldnames` of the
 `eltype` will be automatically created if `addroles` is `true`.
-
-If new elements need to be constructed from QML, a constructor can also be provided, using
-the [`setconstructor`](@ref) method. QML can pass a list of arguments to constructors.
 
 In Qt, each of the elements of a model has a series of roles, available as properties in the
 delegate that is used to display each item. The roles can be added using the
@@ -347,7 +342,6 @@ function JuliaItemModel(a::DataT, addroles=true) where {DataT}
         setter(array, value, row, col) = setproperty!(array[row, col], fname, value)
         addrole!(modeldata, rolename, getter, setter)
       end
-      modeldata.constructor = T
     else
       setgetter!(modeldata, string, DisplayRole)
       setsetter!(modeldata, setindex!, EditRole)
@@ -456,50 +450,6 @@ function addrole!(m::ItemModelData, name, getter, setter)
   end
 
   return
-end
-
-
-"""
-    function setconstructor(model::JuliaItemModel, constructor)
-
-Add a constructor to a [`JuliaItemModel`](@ref). The `constructor` will process `append`ed items
-before they are added. Note that you can simply pass a list of arguments from QML,
-and they will be interpret in Julia as positional arguments.
-
-```jldoctest
-julia> using QML
-
-julia> items = ["A", "B"];
-
-julia> array_model = JuliaItemModel(items, false);
-
-julia> setconstructor(array_model, uppercase);
-
-julia> mktempdir() do folder
-          path = joinpath(folder, "main.qml")
-          write(path, \"""
-          import QtQuick
-          import QtQuick.Controls
-          import QtQuick.Layouts
-          ApplicationWindow {
-            visible: true
-            Button {
-              text: "Add C"
-              onClicked: array_model.append(["c"])
-            }
-            Timer {
-              running: true
-              onTriggered: Qt.quit()
-            }
-          }
-          \""")
-          loadqml(path; array_model = array_model)
-          exec()
-        end
-```
-"""
-function setconstructor(lm::JuliaItemModel, constructor)
-  get_julia_data(lm).constructor = constructor
 end
 
 # JuliaItemModel Julia interface

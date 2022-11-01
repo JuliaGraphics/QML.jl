@@ -263,12 +263,7 @@ ListView {
 }
 ```
 
-If no roles are added, one default role named `string` is exposed, calling the Julia function `string` to convert whatever value in the array to a string.
-
-If new elements need to be constructed from QML, a constructor can also be provided, using the `setconstructor` method, taking a `ListModel` and a Julia function as arguments, e.g. just setting identity to return the constructor argument:
-```julia
-setconstructor(array_model, identity)
-```
+If no roles are added, the `Qt::DisplayRole` is exposed calling the Julia function `string` to convert whatever value in the array to a string.
 
 In the dynamiclist example, the entries in the model are all "fruits", having the roles name, cost and attributes. In Julia, this can be encapsulated in a composite type:
 ```julia

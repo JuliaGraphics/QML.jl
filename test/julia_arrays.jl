@@ -35,8 +35,6 @@ clear_model = JuliaItemModel(clear_array)
 
 addrole!(array_model2, "myrole", myrole, setindex!)
 addrole!(array_model2, "decorated", decorated)
-setconstructor(array_model2, identity)
-setconstructor(insert_model, identity)
 
 mutable struct ListElem
   a::String
