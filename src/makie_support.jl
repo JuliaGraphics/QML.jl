@@ -4,7 +4,6 @@ using ..GLMakie
 using ..GLMakie.Colors
 using ..GLMakie.FixedPointNumbers
 using ..GLMakie.ModernGL
-using ..GLMakie.StaticArrays
 using ..GLMakie.LinearAlgebra
 using QML
 using CxxWrap
@@ -39,6 +38,8 @@ const ScreenArea = GLMakie.ScreenArea
 end
 
 mutable struct QMLScreen <: GLMakie.GLScreen
+  glscreen::QMLGLContext
+  shader_cache::GLAbstraction.ShaderCache
   screen2scene::Dict{WeakRef, ScreenID}
   screens::Vector{ScreenArea}
   renderlist::Vector{Tuple{ZIndex, ScreenID, RenderObject}}
@@ -52,17 +53,22 @@ mutable struct QMLScreen <: GLMakie.GLScreen
   qmlfbo::QML.QOpenGLFramebufferObject
 
   @cxxdereference function QMLScreen(fbo::QML.QOpenGLFramebufferObject)
+    ctx = QMLGLContext(true, CxxPtr(fbo))
+    GLMakie.ShaderAbstractions.switch_context!(ctx)
     fbosize = sizetuple(fbo)
     fb = GLMakie.GLFramebuffer(fbosize)
+    shader_cache = GLAbstraction.ShaderCache()
     newscreen = new(
+      ctx,
+      shader_cache,
       Dict{WeakRef, ScreenID}(),
       ScreenArea[],
       Tuple{ZIndex, ScreenID, RenderObject}[],
       [
-        enable_SSAO[] ? GLMakie.ssao_postprocessor(fb) : GLMakie.empty_postprocessor(),
-        GLMakie.OIT_postprocessor(fb),
-        enable_FXAA[] ? GLMakie.fxaa_postprocessor(fb) : GLMakie.empty_postprocessor(),
-        to_qmlscreen_postprocessor(fb)
+        enable_SSAO[] ? GLMakie.ssao_postprocessor(fb, shader_cache) : GLMakie.empty_postprocessor(),
+        GLMakie.OIT_postprocessor(fb, shader_cache),
+        enable_FXAA[] ? GLMakie.fxaa_postprocessor(fb, shader_cache) : GLMakie.empty_postprocessor(),
+        to_qmlscreen_postprocessor(fb, shader_cache)
       ],
       Dict{UInt64, RenderObject}(),
       Dict{UInt32, AbstractPlot}(),
@@ -156,9 +162,10 @@ function GLMakie.render_frame(screen::QMLScreen; resize_buffers=true)
 end
 
 # Slightly adapted from GLMakie/postprocessing.jl/to_screen_postprocessor
-function to_qmlscreen_postprocessor(framebuffer)
+function to_qmlscreen_postprocessor(framebuffer, shader_cache)
   # draw color buffer
   shader = LazyShader(
+    shader_cache,
     GLMakie.loadshader("postprocessing/fullscreen.vert"),
     GLMakie.loadshader("postprocessing/copy.frag")
   )
@@ -202,7 +209,6 @@ function setup_screen(fbo)
     old_ctx.valid = false
   catch
   end
-  GLMakie.ShaderAbstractions.switch_context!(QMLGLContext(true, fbo))
   return QMLScreen(fbo)
 end
 
