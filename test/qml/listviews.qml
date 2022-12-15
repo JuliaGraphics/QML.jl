@@ -83,7 +83,7 @@ ApplicationWindow {
         Julia.testfail("bad model text after change: " + tabview.currentItem.text)
       }
 
-      Qt.quit()
+      Qt.exit(0)
     }
   }
 }

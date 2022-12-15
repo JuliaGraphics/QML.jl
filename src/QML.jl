@@ -286,8 +286,8 @@ julia> mktempdir() do folder
              }
            }
            Timer {
-             running: true
-             onTriggered: Qt.quit()
+             running: true; repeat: false
+             onTriggered: Qt.exit(0)
            }
          }
          \""")
@@ -326,7 +326,7 @@ Base.get(jpm::JuliaPropertyMap, k::AbstractString, def) = get(jpm.dict, k, def)
 function Base.delete!(jpm::JuliaPropertyMap, k::AbstractString)
   storedvalue = jpm.dict[k]
   if storedvalue isa Observable
-    for observer in filter(x -> x isa QmlPropertyUpdater, Observables.listeners(storedvalue))
+    for (_,observer) in filter(x -> x[2] isa QmlPropertyUpdater, Observables.listeners(storedvalue))
       if observer.propertymap == jpm.propertymap
         off(storedvalue, observer)
       end
@@ -440,8 +440,8 @@ julia> mktempdir() do folder
                   onDuplicateSignal: output.text = value
                 }
                 Timer {
-                  running: true
-                  onTriggered: Qt.quit()
+                  running: true; repeat: false
+                  onTriggered: Qt.exit(0)
                 }
               }
           }
@@ -484,8 +484,8 @@ julia> mktempdir() do folder
               text: Julia.greet()
             }
             Timer {
-              running: true
-              onTriggered: Qt.quit()
+              running: true; repeat: false
+              onTriggered: Qt.exit(0)
             }
           }
           \""")

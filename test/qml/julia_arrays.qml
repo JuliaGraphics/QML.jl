@@ -47,7 +47,7 @@ Item {
       custom_model.setData(custom_model.index(1,0), 5, roles.b);
       custom_model.appendRow({"b":10, "a":"ten"});
 
-      Qt.quit()
+      Qt.exit(0)
     }
   }
 }

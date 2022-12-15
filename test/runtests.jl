@@ -17,7 +17,7 @@ testfiles = filter(fname -> fname ∉ excluded, readdir(@__DIR__))
   end
 end
 
-# doctest(QML, fix=true)
+doctest(QML, fix=true)
 
 # import LibGit2
 
@@ -25,7 +25,7 @@ end
 #   mktempdir() do tmpd
 #     cd(tmpd) do
 #       examplesdir = mkdir("QmlJuliaExamples")
-#       LibGit2.clone("https://github.com/barche/QmlJuliaExamples.git", examplesdir)
+#       LibGit2.clone("https://github.com/barche/QmlJuliaExamples.git", examplesdir; branch="qt6")
 #       cd(examplesdir) do
 #         qmlpath = dirname(dirname(pathof(QML)))
 #         updatecommand = """

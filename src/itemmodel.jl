@@ -317,8 +317,8 @@ julia> mktempdir() do folder
                     onClicked: fruits.append([name, cost])
                   }
                   Timer {
-                    running: true
-                    onTriggered: Qt.quit()
+                    running: true; repeat: false
+                    onTriggered: Qt.exit(0)
                   }
                 }
               }
@@ -403,9 +403,8 @@ julia> array_model = JuliaItemModel(items, false);
 
 julia> addrole!(array_model, "item", identity, setindex!)
 
-julia> roles(array_model)
-1-element QML.QStringListAllocated:
- "item"
+julia> roles(array_model)[256]
+"item"
 
 julia> mktempdir() do folder
           path = joinpath(folder, "main.qml")
@@ -424,8 +423,8 @@ julia> mktempdir() do folder
               }
             }
             Timer {
-              running: true
-              onTriggered: Qt.quit()
+              running: true; repeat: false
+              onTriggered: Qt.exit(0)
             }
           }
           \""")

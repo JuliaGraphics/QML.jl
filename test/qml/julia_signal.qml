@@ -16,7 +16,7 @@ Item {
        onTriggered: {
          Julia.emit_signal1()
          Julia.emit_signal2()
-         Qt.quit()
+         Qt.exit(0)
        }
    }
 }

@@ -15,8 +15,8 @@ julia> quick_view = mktempdir() do folder
           import QtQuick.Controls
           Rectangle {
             Timer {
-              running: true
-              onTriggered: Qt.quit()
+              running: true; repeat: false
+              onTriggered: Qt.exit(0)
             }
           }
           \""")
@@ -65,8 +65,8 @@ julia> mktempdir() do folder
               text: greeting
             }
             Timer {
-              running: true
-              onTriggered: Qt.quit()
+              running: true; repeat: false
+              onTriggered: Qt.exit(0)
             }
           }
           \""")
@@ -156,8 +156,8 @@ julia> mktempdir() do folder
                 height: 500
               }
               Timer {
-                running: true
-                onTriggered: Qt.quit()
+                running: true; repeat: false
+                onTriggered: Qt.exit(0)
               }
             }
           }
@@ -226,8 +226,8 @@ julia> mktempdir() do folder
               text: greeting
             }
             Timer {
-              running: true
-              onTriggered: Qt.quit()
+              running: true; repeat: false
+              onTriggered: Qt.exit(0)
             }
           }
           \""")
@@ -261,8 +261,8 @@ julia> set_data(component, QByteArray(\"""
                 text: "Hello, World!"
               }
               Timer {
-                running: true
-                onTriggered: Qt.quit()
+                running: true; repeat: false
+                onTriggered: Qt.exit(0)
               }
             }
           }
@@ -312,8 +312,8 @@ julia> mktempdir() do folder
               text: "Hello, World!"
             }
             Timer {
-              running: true
-              onTriggered: Qt.quit()
+              running: true; repeat: false
+              onTriggered: Qt.exit(0)
             }
           }
           \""")
@@ -360,8 +360,8 @@ julia> mktempdir() do folder
                   onClicked: timer.start()
               }
               Timer { // unrelated, this is a timer to stop and continue testing
-                running: true
-                onTriggered: Qt.quit()
+                running: true; repeat: false
+                onTriggered: Qt.exit(0)
               }
           }
           \""")
@@ -413,8 +413,8 @@ julia> set_data(component, QByteArray(\"""
                 text: greeting
               }
               Timer {
-                running: true
-                onTriggered: Qt.quit()
+                running: true; repeat: false
+                onTriggered: Qt.exit(0)
               }
             }
           }

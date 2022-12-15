@@ -8,7 +8,7 @@ Item {
       Julia.julia_object_check(Julia.geta(objects.julia_object) == 1)
       Julia.julia_object_check(Julia.getx(objects.julia_object) == 2.0)
       objects.observed_object = Julia.replace_julia_object()
-      Qt.quit()
+      Qt.exit(0)
     }
   }
 

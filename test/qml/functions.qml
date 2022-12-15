@@ -31,7 +31,7 @@ Item {
 
       Julia.unexported_check(Julia.unexported_return_two())
 
-      Qt.quit()
+      Qt.exit(0)
     }
   }
 }

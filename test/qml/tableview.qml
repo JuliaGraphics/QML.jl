@@ -225,7 +225,7 @@ ApplicationWindow {
         default:
           Julia.compare(t, getValues(4,2));
           timer.running = false;
-          Qt.quit();
+          Qt.exit(0);
       }
       tableView.forceLayout();
     }

@@ -19,6 +19,6 @@ Timer {
 
         propmap.a = 2
 
-        Qt.quit();
+        Qt.exit(0);
      }
  }
