@@ -343,7 +343,7 @@ function JuliaItemModel(a::DataT, addroles=true) where {DataT}
       for fname in fieldnames(T)
         rolename = string(fname)
         getter(x) = getfield(x, fname)
-        setter(array, value, row, col) = setproperty!(array[row, col], fname, value)
+        setter(array, value, row, col=1) = setproperty!(array[row, col], fname, value)
         addrole!(modeldata, rolename, getter, setter)
       end
     else
