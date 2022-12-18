@@ -65,7 +65,11 @@ headerdata(m::ItemModelData, row_or_col, orientation, role) = m.headerdata(m.val
   end
 
   try
-    m.setters[role](m.values, value(val), row, col)
+    if colcount(m) == 1
+      m.setters[role](m.values, value(val), row)
+    else
+      m.setters[role](m.values, value(val), row, col)
+    end
     emit_data_changed(itemmodel, row, col, row, col)
     return true
   catch e

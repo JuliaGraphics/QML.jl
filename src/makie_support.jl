@@ -21,7 +21,18 @@ mutable struct QMLGLContext
   fbo::CxxPtr{QML.QOpenGLFramebufferObject}
 end
 
-GLMakie.ShaderAbstractions.native_switch_context!(ctx::QMLGLContext) = QML.bind(ctx.fbo)
+function GLMakie.ShaderAbstractions.native_switch_context!(ctx::QMLGLContext)
+  if !ctx.valid
+    try
+      error("Attempt to bind invalid context $ctx")
+    catch e
+      Base.printstyled("ERROR: "; color=:red, bold=true)
+      Base.showerror(stdout, e)
+      Base.show_backtrace(stdout, Base.catch_backtrace())
+    end
+  end
+  QML.bind(ctx.fbo)
+end
 
 function GLMakie.ShaderAbstractions.native_context_alive(ctx::QMLGLContext)
   return ctx.valid
@@ -50,7 +61,6 @@ mutable struct QMLScreen <: GLMakie.GLScreen
   framebuffer::GLMakie.GLFramebuffer
   # render_tick::Observable{Nothing}
   # window_open::Observable{Bool}
-  qmlfbo::QML.QOpenGLFramebufferObject
 
   @cxxdereference function QMLScreen(fbo::QML.QOpenGLFramebufferObject)
     ctx = QMLGLContext(true, CxxPtr(fbo))
@@ -76,7 +86,6 @@ mutable struct QMLScreen <: GLMakie.GLScreen
       fb,
       # Observable(nothing),
       # Observable(true),
-      fbo
     )
     finalizer(newscreen) do s
       empty!.((s.renderlist, s.screens, s.cache, s.screen2scene, s.cache2plot, s.postprocessors))
@@ -85,12 +94,21 @@ mutable struct QMLScreen <: GLMakie.GLScreen
   end
 end
 
+function update_fbo!(screen, fbo)
+  screen.glscreen.fbo = CxxPtr(fbo)
+  GLMakie.ShaderAbstractions.switch_context!(screen.glscreen)
+  fbosize = sizetuple(fbo)
+  resize!(screen.framebuffer, fbosize)
+  screen.framecache = Matrix{RGB{N0f8}}(undef, fbosize)
+  return screen
+end
+
 Base.isopen(screen::QMLScreen) = true
-GLMakie.GeometryBasics.widths(screen::QMLScreen) = sizetuple(screen.qmlfbo)
+GLMakie.GeometryBasics.widths(screen::QMLScreen) = sizetuple(screen.glscreen.fbo)
 
 # From rendering.jl in GLMakie, with only slight adaptations
 function GLMakie.render_frame(screen::QMLScreen; resize_buffers=true)
-  w, h = sizetuple(screen.qmlfbo)
+  w, h = sizetuple(screen.glscreen.fbo)
   fb = screen.framebuffer
   if resize_buffers
     resize!(fb, (w,h))
@@ -177,10 +195,10 @@ function to_qmlscreen_postprocessor(framebuffer, shader_cache)
 
   full_render = screen -> begin
     fb = screen.framebuffer
-    w, h = sizetuple(screen.qmlfbo)
+    w, h = sizetuple(screen.glscreen.fbo)
     # w, h = size(fb) # original from Makie
 
-    QML.bind(screen.qmlfbo) # Transfer everything to the QMLScreen
+    QML.bind(screen.glscreen.fbo) # Transfer everything to the QMLScreen
     glViewport(0, 0, w, h)
     glClear(GL_COLOR_BUFFER_BIT)
     GLAbstraction.render(pass) # copy postprocess
@@ -195,7 +213,7 @@ function Base.empty!(screen::QMLScreen)
 end
 
 function Base.display(screen::QMLScreen, scene::Scene)
-  scene.events.window_area[] = Makie.IRect(0,0,sizetuple(screen.qmlfbo)...)
+  scene.events.window_area[] = Makie.IRect(0,0,sizetuple(screen.glscreen.fbo)...)
   empty!(screen)
   insertplots!(screen, scene)
   # Makie.update!(scene)
@@ -204,12 +222,12 @@ function Base.display(screen::QMLScreen, scene::Scene)
 end
 
 function setup_screen(fbo)
-  try
-    old_ctx = GLMakie.GLAbstraction.current_context()
-    old_ctx.valid = false
-  catch
-  end
   return QMLScreen(fbo)
+end
+
+function setup_screen(screen, fbo)
+  update_fbo!(screen, fbo)
+  return screen
 end
 
 function on_context_destroy()
