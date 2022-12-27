@@ -9,7 +9,7 @@ Base.:+(a::QML.ItemDataRole, b::Integer) = convert(Int32,a) + b
 Base.trailing_zeros(role::ItemDataRole) = Base.trailing_zeros(convert(Int32,role))
 Base.:(>>)(a::ItemDataRole, b::Int64) = convert(Int32, a) >> b
 mutable struct ItemModelData{DataT}
-  values::DataT
+  values::Observable{DataT}
   roles::RoleNames
   getters::FunctionCollection
   setters::FunctionCollection
@@ -17,15 +17,15 @@ mutable struct ItemModelData{DataT}
   setheaderdata::Function
 
   function ItemModelData{DataT}(modeldata::DataT) where {DataT}
-    newmodel = new(modeldata, RoleNames(), FunctionCollection(), FunctionCollection(), defaultheaderdata, defaultsetheaderdata!)
+    newmodel = new(Observable(modeldata), RoleNames(), FunctionCollection(), FunctionCollection(), defaultheaderdata, defaultsetheaderdata!)
     setgetter!(newmodel, string, DisplayRole)
     return newmodel
   end
 end
 
 Base.values(itemmodel::JuliaItemModel) = get_julia_data(itemmodel).values
-rowcount(m::ItemModelData) = Int32(Base.size(m.values,1))
-colcount(m::ItemModelData) = Int32(Base.size(m.values,2))
+rowcount(m::ItemModelData) = Int32(Base.size(m.values[],1))
+colcount(m::ItemModelData) = Int32(Base.size(m.values[],2))
 rolenames(m::ItemModelData) = m.roles
 
 function rolegetter(m::ItemModelData, role::Integer)
@@ -46,29 +46,43 @@ function isvalidindex(values, row, col)
 end
 
 function data(m::ItemModelData, role::Integer, row::Integer, col::Integer)
-  if !isvalidindex(m.values, row, col)
+  if !isvalidindex(m.values[], row, col)
     return QVariant()
   end
   rolefunc = rolegetter(m, role)
-  return QVariant(rolefunc(m.values[row,col]))
+  return QVariant(rolefunc(m.values[][row,col]))
 end
 
 # By default, we just return the column or row number as header data
-defaultheaderdata(data, row_or_col, orientation, role) = QVariant(row_or_col)
+defaultheaderdata(data, row_or_col, orientation, role) = row_or_col
 
-headerdata(m::ItemModelData, row_or_col, orientation, role) = m.headerdata(m.values, row_or_col, orientation, role)
+headerdata(m::ItemModelData, row_or_col, orientation, role) = QVariant(m.headerdata(m.values[], row_or_col, orientation, role))
+
+"""
+  setheadergetter!(itemmodel::JuliaItemModel, f::Function)
+
+Set `f` as function to call when getting header data. The signature of of should be:
+```
+  f(data, row_or_col, orientation, role)
+```
+Here, `data` is the internal data array stored in the model, `row_or_col` is the index of the row or column,
+`orientation` is either `QML.Horizontal` for column headers or `QML.Vertical` for row headers
+and `role` is an integer describing the role
+(e.g. QML.DisplayRole) 
+"""
+setheadergetter!(itemmodel::JuliaItemModel, f::Function) = (get_julia_data(itemmodel).headerdata = f)
 
 @cxxdereference function setdata!(itemmodel::JuliaItemModel, val::QVariant, role::Integer, row::Integer, col::Integer)
   m = get_julia_data(itemmodel)
-  if !isvalidindex(m.values, row, col)
+  if !isvalidindex(m.values[], row, col)
     return false
   end
 
   try
     if colcount(m) == 1
-      m.setters[role](m.values, value(val), row)
+      m.setters[role](m.values[], value(val), row)
     else
-      m.setters[role](m.values, value(val), row, col)
+      m.setters[role](m.values[], value(val), row, col)
     end
     emit_data_changed(itemmodel, row, col, row, col)
     return true
@@ -91,9 +105,20 @@ end
 
 function setheaderdata!(itemmodel::JuliaItemModel, row_or_col, orientation, value, role)
   m = get_julia_data(itemmodel)
-  m.setheaderdata(m.values, row_or_col, orientation, value, role)
+  m.setheaderdata(m.values[], row_or_col, orientation, value, role)
   emit_header_data_changed(itemmodel, orientation, row_or_col, row_or_col)
 end
+
+"""
+  setheadersetter!(itemmodel::JuliaItemModel, f::Function)
+
+Set `f` as function to call when setting header data. The signature of of should be:
+```
+  f(data, row_or_col, orientation, value, role)
+```
+Here, `value` is the value for the given header item. The other arguments are the same as in [`setheadergetter!`](@ref) 
+"""
+setheadersetter!(itemmodel::JuliaItemModel, f::Function) = (get_julia_data(itemmodel).setheaderdata = f)
 
 Base.empty!(itemmodel::JuliaItemModel) = clear!(itemmodel)
 
@@ -129,27 +154,28 @@ function append_row!(m::ItemModelData, row::QVariantMap)
       @warn "Can't append row $row, not all columns were found"
     end
     if rowcount(m) > 0
-      newrow = deepcopy(m.values[end]) 
-      push!(m.values, newrow)
+      newrow = deepcopy(m.values[][end]) 
+      push!(m.values[], newrow)
       for (rolename,val) in row
         roleidx = roleindex(m, string(rolename))
         rowidx = rowcount(m)
-        m.setters[roleidx](m.values, value(val), rowidx, 1)
+        m.setters[roleidx](m.values[], value(val), rowidx, 1)
       end
     else
-      ItemT = eltype(m.values)
+      ItemT = eltype(m.values[])
       fnames = fieldnames(ItemT)
       constructorargs = []
       for fname in string.(fnames)
         push!(constructorargs, value(row[fname]))
       end
-      push!(m.values, ItemT(constructorargs...))
+      push!(m.values[], ItemT(constructorargs...))
     end
   end
 end
 
 function append_row!(m::ItemModelData, row::AbstractVector{QVariant})
-  push!(m.values, value.(row))
+  push!(m.values[], value.(row))
+  notify(m.values)
 end
 
 @cxxdereference function insert_row!(m::JuliaItemModel, rowidx, row::QVariant)
@@ -161,12 +187,13 @@ end
 
 function insert_row!(m::ItemModelData, rowidx, row::AbstractVector{QVariant})
   if length(row) == 1
-    insert!(m.values, rowidx, row...)
+    insert!(m.values[], rowidx, row...)
+    notify(m.values)
     return
   end
-  ValT = typeof(m.values)
-  startidx = axes(m.values)[1][1]
-  m.values = vcat(m.values[startidx:rowidx-1,:], ValT(value.(row)'), m.values[rowidx:end,:])
+  ValT = typeof(m.values[])
+  startidx = axes(m.values[])[1][1]
+  m.values[] = vcat(m.values[][startidx:rowidx-1,:], ValT(value.(row)'), m.values[][rowidx:end,:])
   return
 end
 
@@ -181,7 +208,7 @@ function make_move_permutation(values, fromidx, toidx, nbitems, dim)
 end
 
 @cxxdereference function move_rows!(m::JuliaItemModel, fromidx, toidx, nbrows)
-  values = get_julia_data(m).values
+  values = get_julia_data(m).values[]
   if !begin_move_rows(m, fromidx, toidx, nbrows)
     @warn "Move from index $fromidx to $toidx not possible on this model"
     return
@@ -193,18 +220,18 @@ end
 
 @cxxdereference function remove_rows!(m::JuliaItemModel, rowidx, nrows)
   begin_remove_rows(m, rowidx, nrows)
-  deleteat!(get_julia_data(m).values, rowidx:rowidx+nrows-1)
+  deleteat!(get_julia_data(m).values[], rowidx:rowidx+nrows-1)
   end_remove_rows(m)
 end
 
 @cxxdereference function set_row!(m::JuliaItemModel, rowidx, row::QVariant)
   modeldata = get_julia_data(m)
   set_row!(modeldata, rowidx, value(row))
-  emit_data_changed(m, rowidx, 1, rowidx, Base.size(modeldata.values,2))
+  emit_data_changed(m, rowidx, 1, rowidx, Base.size(modeldata.values[],2))
 end
 
 function set_row!(modeldata::ItemModelData, rowidx, row::AbstractVector{QVariant})
-  modeldata.values[rowidx,:] .= value.(row)
+  modeldata.values[][rowidx,:] .= value.(row)
 end
 
 @cxxdereference function append_column!(m::JuliaItemModel, column::QVariant)
@@ -216,8 +243,9 @@ end
 end
 
 function append_column!(m::ItemModelData, column::AbstractVector{QVariant})
-  ValT = typeof(m.values)
-  m.values = hcat(m.values, ValT(value.(column)))
+  newcol = similar(m.values[], eltype(m.values[]), (length(column),1))
+  newcol .= value.(column)
+  m.values[] = hcat(m.values[], newcol)
 end
 
 @cxxdereference function insert_column!(m::JuliaItemModel, columnidx, column::QVariant)
@@ -228,14 +256,14 @@ end
 end
 
 function insert_column!(m::ItemModelData, columnidx, column::AbstractVector{QVariant})
-  ValT = typeof(m.values)
-  startidx = axes(m.values)[2][1]
-  m.values = hcat(m.values[:,startidx:columnidx-1], ValT(value.(column)), m.values[:,columnidx:end])
+  ValT = typeof(m.values[])
+  startidx = axes(m.values[])[2][1]
+  m.values[] = hcat(m.values[][:,startidx:columnidx-1], ValT(value.(column)), m.values[][:,columnidx:end])
   return
 end
 
 @cxxdereference function move_columns!(m::JuliaItemModel, fromidx, toidx, nbcolumns)
-  values = get_julia_data(m).values
+  values = get_julia_data(m).values[]
   if !begin_move_columns(m, fromidx, toidx, nbcolumns)
     @warn "Move from index $fromidx to $toidx not possible on this model"
     return
@@ -248,28 +276,39 @@ end
 @cxxdereference function remove_columns!(itemmodel::JuliaItemModel, columnidx, ncolumns)
   begin_remove_columns(itemmodel, columnidx, ncolumns)
   m = get_julia_data(itemmodel)
-  m.values = hcat(m.values[:,1:columnidx-1], m.values[:,(columnidx+ncolumns):end])
+  headervalues = []
+  if m.setheaderdata != defaultsetheaderdata!
+    for i in 1:colcount(m)
+      if !(columnidx <= i < columnidx+ncolumns)
+        push!(headervalues, m.headerdata(m.values[], i, QML.Horizontal, DisplayRole))
+      end
+    end
+  end
+  m.values[] = hcat(m.values[][:,1:columnidx-1], m.values[][:,(columnidx+ncolumns):end])
+  for (i,h) in enumerate(headervalues)
+    m.setheaderdata(m.values[], i, QML.Horizontal, h, EditRole)
+  end
   end_remove_columns(itemmodel)
 end
 
 @cxxdereference function set_column!(m::JuliaItemModel, columnidx, column::QVariant)
   modeldata = get_julia_data(m)
   set_column!(modeldata, columnidx, value(column))
-  emit_data_changed(m, 1, columnidx, Base.size(modeldata.values,1), columnidx)
+  emit_data_changed(m, 1, columnidx, Base.size(modeldata.values[],1), columnidx)
 end
 
 function set_column!(modeldata::ItemModelData, columnidx, column::AbstractVector{QVariant})
-  modeldata.values[:,columnidx] .= value.(column)
+  modeldata.values[][:,columnidx] .= value.(column)
 end
 
-clear!(m::ItemModelData) = empty!(m.values)
+clear!(m::ItemModelData) = empty!(m.values[])
 @cxxdereference function clear!(itemmodel::JuliaItemModel)
   begin_reset_model(itemmodel)
   clear!(get_julia_data(itemmodel))
   end_reset_model(itemmodel)
 end
 
-Base.push!(m::ItemModelData, val) = push!(m.values, val)
+Base.push!(m::ItemModelData, val) = push!(m.values[], val)
 
 """
     function JuliaItemModel(items::AbstractVector, addroles::Bool = true)
@@ -456,17 +495,17 @@ function addrole!(m::ItemModelData, name, getter, setter)
 end
 
 # JuliaItemModel Julia interface
-Base.getindex(lm::JuliaItemModel, idx::Int) = get_julia_data(lm).values[idx]
+Base.getindex(lm::JuliaItemModel, idx::Int) = get_julia_data(lm).values[][idx]
 function Base.setindex!(lm::JuliaItemModel, value, row, col=1)
   lmdata = get_julia_data(lm)
-  lmdata.values[row, col] = value
+  lmdata.values[][row, col] = value
   emit_data_changed(lm, row, col, row, col)
 end
 function Base.push!(lm::JuliaItemModel, val)
   m = get_julia_data(lm)
   idx = rowcount(m) + 1
   begin_insert_rows(lm, idx, idx)
-  push!(m.values, val)
+  push!(m.values[], val)
   end_insert_rows(lm)
 end
 function Base.size(lm::JuliaItemModel)
@@ -476,7 +515,7 @@ function Base.size(lm::JuliaItemModel)
   end
   return (rowcount(modeldata), colcount(modeldata))
 end
-Base.length(lm::JuliaItemModel) = length(get_julia_data(lm).values)
+Base.length(lm::JuliaItemModel) = length(get_julia_data(lm).values[])
 Base.delete!(lm::JuliaItemModel, i) = remove_rows!(lm, i, 1)
 
 function force_model_update(lm::JuliaItemModel)
