@@ -15,7 +15,7 @@ jlqml_jll = "6b5019fb-a83d-5b4e-a9f7-678a36c28df7"
 
 [compat]
 ColorTypes = "0.11"
-CxxWrap = "0.12"
+CxxWrap = "0.12, 0.13"
 MacroTools = "0.5"
 Observables = "0.4"
 Requires = "1.0"
