@@ -73,7 +73,7 @@ function compare(refidx::Number, obtained::AbstractArray)
   println("testing case $refidx")
   try
     @test refvalues[refidx] == toarray(obtained)
-    @test refvalues[refidx] == values(tablemodel)
+    @test refvalues[refidx] == values(tablemodel)[]
     global nbtestspass += 1
   catch e
     global nberrors += 1
@@ -88,7 +88,7 @@ loadqml(qml_file, tablemodel=tablemodel, properties=properties)
 
 exec()
 
-julia_table = values(tablemodel)
+julia_table = values(tablemodel)[] # values returns an Observable
 
 @test nberrors == 0
 @test nbtestspass == 12

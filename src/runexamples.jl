@@ -8,7 +8,7 @@ function runexamples()
     push!(excluded, "makie-plot.jl") # CI OpenGL is too old
   end
 
-  renderstring = "Frame rendered"
+  renderstring = "frame rendered"
 
   function errorfilter(line)
     return !Base.contains(line, renderstring)
@@ -45,10 +45,11 @@ function runexamples()
         throw(ErrorException("Example $fname errored with output:\n$outstr\nand error:\n$errlines"))
       elseif isempty(outstr) && isempty(errlines)
         println("Example $fname finished")
-      elseif isempty(outstr)
-        println("Example $fname finished with error:\n$errlines")
+      end
+      if isempty(outstr)
+        println("Example $fname stderr:\n$errlines")
       else
-        println("Example $fname finished with output:\n$outstr")
+        println("Example $fname stdout:\n$outstr")
       end
     end
   end
