@@ -1,4 +1,4 @@
-function runexamples()
+function runexamples(allowmakie)
   ENV["QT_LOGGING_RULES"] = "qt.scenegraph.time.renderloop=true;"
   excluded = String[]
 
@@ -21,6 +21,10 @@ function runexamples()
         continue
       end
       if any(Base.contains.(readlines(fname),"GKSwstype"))
+        println("Skipping GR example $fname")
+        continue
+      end
+      if !allowmakie && any(Base.contains.(readlines(fname),"Makie"))
         println("Skipping GR example $fname")
         continue
       end
