@@ -27,8 +27,8 @@ withenv("JULIA_LOAD_PATH" => nothing, "JULIA_GR_PROVIDER" => "BinaryBuilder") do
       examplesdir = mkdir("QmlJuliaExamples")
       LibGit2.clone("https://github.com/barche/QmlJuliaExamples.git", examplesdir; branch="qt6")
       cd(examplesdir) do
-        qmlpath = dirname(dirname(pathof(QML)))
-        cxxpath = dirname(dirname(pathof(QML.CxxWrap)))
+        qmlpath = replace(dirname(dirname(pathof(QML))), "\\" => "/")
+        cxxpath = replace(dirname(dirname(pathof(QML.CxxWrap))), "\\" => "/")
         updatecommand = """
           using Pkg
           Pkg.develop([PackageSpec(path="$qmlpath"), PackageSpec(path="$cxxpath")])
