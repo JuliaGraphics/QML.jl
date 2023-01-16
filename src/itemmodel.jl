@@ -214,7 +214,11 @@ end
     return
   end
   permutation = make_move_permutation(values, fromidx, toidx, nbrows, 1)
-  values .= values[permutation,:]
+  if ndims(values) == 1
+    values .= values[permutation]
+  else
+    values .= values[permutation,:]
+  end
   end_move_rows(m)
 end
 
