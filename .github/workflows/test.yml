@@ -1,12 +1,12 @@
-name: test-win-mac
+name: test-linux
 on:
   - push
   - pull_request
-    
+
 defaults:
   run:
     shell: bash
-    
+
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
@@ -16,9 +16,10 @@ jobs:
       matrix:
         version:
           - '1.6'
-          - '1.7'
+          - '1.8'
           - 'nightly'
         os:
+          - ubuntu-latest
           - macOS-latest
           - windows-latest
         arch:
@@ -28,7 +29,6 @@ jobs:
       - uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.version }}
-          arch: ${{ matrix.arch }}
       # Mesa install copied from https://github.com/microsoft/OpticSim.jl
       - name: Install Mesa (Windows only)
         if: runner.os == 'Windows'
@@ -50,6 +50,28 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
+      - run: julia -e "using Pkg; Pkg.status(); Pkg.Registry.add(RegistrySpec(url = \"https://github.com/barche/CxxWrapTestRegistry.git\"))"
       - uses: julia-actions/julia-buildpkg@latest
-      - uses: julia-actions/julia-runtest@latest
-
+      - run: julia -e 'using Pkg; Pkg.add([PackageSpec(name="Qt6Base_jll", version=v"6.3.0"), PackageSpec(name="Qt6ShaderTools_jll", version=v"6.3.0")])'
+      - name: install-xfvb
+        if: runner.os == 'Linux'
+        run: sudo apt-get install xvfb libxkbcommon-x11-0
+      - name: test-linux
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum julia --color=yes --check-bounds=yes --project -e 'using Pkg; Pkg.test(coverage=true)'
+        env:
+          XDG_RUNTIME_DIR: /tmp/runtime-runner
+      - name: test-win-mac
+        if: runner.os != 'Linux'
+        uses: julia-actions/julia-runtest@latest
+      - uses: julia-actions/julia-processcoverage@v1
+        env:
+          DISABLE_AMEND_COVERAGE_FROM_SRC: yes
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ./lcov.info
+          fail_ci_if_error: false
+      - uses: domluna/JuliaFormatter-action@master
+        with:
+          args: -v .
+        continue-on-error: true
