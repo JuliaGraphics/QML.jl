@@ -4,6 +4,8 @@ authors = ["Bart Janssens <bart@bartjanssens.org>"]
 version = "0.7.1"
 
 [deps]
+Qt6Base_jll = "c0090381-4147-56d7-9ebc-da0b1113ec56"
+Qt6ShaderTools_jll = "ce943373-25bb-56aa-8eca-768745ed7b5a"
 ColorTypes = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
@@ -21,6 +23,8 @@ Observables = "0.5"
 Requires = "1.0"
 jlqml_jll = "0.4"
 julia = "1.6"
+Qt6Base_jll = "=6.3.0"
+Qt6ShaderTools_jll = "=6.3.0"
 
 [extras]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"

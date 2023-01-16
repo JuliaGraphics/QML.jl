@@ -20,6 +20,10 @@ function runexamples()
         println("Skipping async example $fname")
         continue
       end
+      if any(Base.contains.(readlines(fname),"GKSwstype"))
+        println("Skipping GR example $fname")
+        continue
+      end
       println("running example ", fname, "...")
       outbuf = IOBuffer()
       errbuf = IOBuffer()
