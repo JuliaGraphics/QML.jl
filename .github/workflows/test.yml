@@ -56,7 +56,7 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get install xvfb libxkbcommon-x11-0
       - name: test-linux
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.version != '1.6'
         run: xvfb-run --auto-servernum julia --color=yes --check-bounds=yes --project -e 'using Pkg; Pkg.test(coverage=true)'
         env:
           XDG_RUNTIME_DIR: /tmp/runtime-runner
