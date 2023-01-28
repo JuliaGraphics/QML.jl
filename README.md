@@ -5,7 +5,7 @@
 [![test-linux](https://github.com/barche/QML.jl/workflows/test-linux/badge.svg)](https://github.com/barche/QML.jl/actions?query=workflow%3Atest-linux)
 [![test-win-mac](https://github.com/barche/QML.jl/workflows/test-win-mac/badge.svg)](https://github.com/barche/QML.jl/actions?query=workflow%3Atest-win-mac)
 
-This package provides an interface to [Qt5 QML](http://qt.io/). It uses the [`CxxWrap`](https://github.com/barche/CxxWrap.jl) package to expose C++ classes. Current functionality allows interaction between QML and Julia using [Observables](https://github.com/JuliaGizmos/Observables.jl), ListModels and function calling. There is also a generic Julia display, as well as specialized integration for image drawing, GR plots and Makie.
+This package provides an interface to [Qt6 QML](http://qt.io/) (and to Qt5 for older versions). It uses the [`CxxWrap`](https://github.com/barche/CxxWrap.jl) package to expose C++ classes. Current functionality allows interaction between QML and Julia using [Observables](https://github.com/JuliaGizmos/Observables.jl), ListModels and function calling. There is also a generic Julia display, as well as specialized integration for image drawing, GR plots and Makie.
 
 ![QML demo](docs/src/qml.gif?raw=true "QML demo")
 
