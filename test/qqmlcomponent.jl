@@ -7,6 +7,7 @@ import QtQuick
 import QtQuick.Controls
 
 ApplicationWindow {
+  id: mainWin
   title: "My Application"
   width: 100
   height: 100
@@ -22,7 +23,7 @@ ApplicationWindow {
 
     Timer {
       interval: 500; running: true; repeat: false
-      onTriggered: Qt.exit(0)
+      onTriggered: mainWin.close()
     }
   }
 }

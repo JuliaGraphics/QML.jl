@@ -1,7 +1,7 @@
 module QML
 
 export QVariant, QString, QUrl
-export QQmlContext, root_context, loadqml, qt_prefix_path, set_source, engine, QByteArray, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, init_application, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, QVariantMap
+export QQmlContext, root_context, loadqml, qt_prefix_path, set_source, engine, QByteArray, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, QVariantMap
 export JuliaPropertyMap
 export QStringList, QVariantList
 export JuliaItemModel, addrole!, roles, roleindex, setgetter!, setsetter!, setheadergetter!, setheadersetter!
@@ -11,7 +11,7 @@ export set_context_property
 export QUrlFromLocalFile
 export qputenv, qgetenv, qunsetenv
 
-# TODO: Document: init_application, init_qmlapplicationengine
+# TODO: Document: init_qmlapplicationengine
 # TODO: Document painter: device, effectiveDevicePixelRatio, height, JuliaCanvas, JuliaPaintedItem, logicalDpiX, logicalDpiY, width, window
 
 using jlqml_jll
@@ -44,6 +44,7 @@ CxxWrap.argument_overloads(::Type{<:QString}) = [QString,String]
 function load_qml(qmlfilename, engine)
   ctx = root_context(CxxRef(engine))
   if !load_into_engine(engine, QString(qmlfilename))
+    cleanup()
     error("Failed to load QML file ", qmlfilename)
   end
   return engine
@@ -62,7 +63,12 @@ function loadqml(qmlfilename; kwargs...)
   for (key,value) in kwargs
     set_context_property(ctx, String(key), value)
   end
-  return load_qml(qmlfilename, qml_engine)
+  try
+    return load_qml(qmlfilename, qml_engine)
+  catch
+    cleanup()
+    rethrow()
+  end
 end
 
 @static if Sys.iswindows()
@@ -85,6 +91,31 @@ function loadqmljll(m::Module)
   end
 end
 
+# Persistent C++ - compatible storage of the command line arguments, passed to the QGuiApplication constructor
+mutable struct ArgcArgv
+  argv
+  argc::Ref{Cint}
+
+  function ArgcArgv(args::Vector{String})
+    argv = Base.cconvert(CxxPtr{CxxPtr{CxxChar}}, args)
+    argc = length(args)
+    return new(argv, argc)
+  end
+end
+
+getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
+
+# Keeps track of the unique QGuiApplication instance, which is created on application init.
+# We need to keep this in Julia, because the correct order of destruction of global instances
+# is only preserved if this object is destroyed when all finalizers run. Otherwise, Qt thread
+# local data will be destroyed before the main thread exits.
+@static if VERSION >= v"1.8"
+  global ARGV::ArgcArgv
+  global APPLICATION::QGuiApplication
+else
+  global ARGV
+  global APPLICATION
+end
 
 function __init__()
   @initcxx
@@ -98,6 +129,9 @@ function __init__()
 
   loadqmljll(jlqml_jll.Qt6Declarative_jll)
   # @require Qt5Charts_jll="dd720b4e-75c8-5196-993d-eac563881c8e" @eval loadqmljll(Qt5Charts_jll)
+
+  global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
+  global APPLICATION = QGuiApplication(ARGV.argc, getargv(ARGV))
 end
 
 # QString

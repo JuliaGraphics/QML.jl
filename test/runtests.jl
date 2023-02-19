@@ -17,7 +17,7 @@ testfiles = filter(fname -> fname ∉ excluded, readdir(@__DIR__))
   end
 end
 
-doctest(QML, fix=true)
+doctest(QML)
 
 import LibGit2
 

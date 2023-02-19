@@ -66,7 +66,7 @@ julia> mktempdir() do folder
             }
             Timer {
               running: true; repeat: false
-              onTriggered: Qt.exit(0)
+              onTriggered: parent.Window.window.close()
             }
           }
           \""")
@@ -313,7 +313,7 @@ julia> mktempdir() do folder
             }
             Timer {
               running: true; repeat: false
-              onTriggered: Qt.exit(0)
+              onTriggered: parent.Window.window.close()
             }
           }
           \""")
@@ -399,7 +399,7 @@ julia> context = root_context(an_engine);
 julia> set_context_property(context, "greeting", "Hello, World!");
 
 julia> context_property(context, "greeting")
-QVariant of type QML.QString with value Hello, World!
+QVariant of type QString with value Hello, World!
 
 julia> component = QQmlComponent(an_engine);
 

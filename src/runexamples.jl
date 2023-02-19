@@ -44,6 +44,8 @@ function runexamples(allowmakie)
         if current_time >= 300.0 || rendered
           sleep(0.5)
           kill(testproc)
+          sleep(0.1)
+          kill(testproc, Base.SIGKILL)
           break
         end
       end

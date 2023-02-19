@@ -10,6 +10,6 @@ Rectangle {
 
   Timer {
     interval: 500; running: true; repeat: false
-    onTriggered: Qt.exit(0)
+    onTriggered: parent.Window.window.close()
   }
 }
