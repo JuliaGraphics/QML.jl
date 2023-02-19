@@ -126,15 +126,14 @@ for syntax.
 ```jldoctest
 julia> using QML
 
-julia> using Plots: plot
+julia> using Colors
 
-julia> function simple_plot(julia_display::JuliaDisplay)
-          x = 0:1:10
-          display(julia_display, plot(x, x, show = false, size = (500, 500)))
+julia> function simple_image(julia_display::JuliaDisplay)
+          display(julia_display, Gray.(rand(50,50)))
           nothing
         end;
 
-julia> @qmlfunction simple_plot
+julia> @qmlfunction simple_image
 
 julia> mktempdir() do folder
           path = joinpath(folder, "main.qml")
@@ -145,26 +144,23 @@ julia> mktempdir() do folder
           import org.julialang
           ApplicationWindow {
             visible: true
-            Column {
-              Button {
-                text: "Plot"
-                onClicked: Julia.simple_plot(julia_display)
+            JuliaDisplay {
+              id: julia_display
+              width: 50
+              height: 50
+              Component.onCompleted: {
+                Julia.simple_image(julia_display)
               }
-              JuliaDisplay {
-                id: julia_display
-                width: 500
-                height: 500
-              }
-              Timer {
-                running: true; repeat: false
-                onTriggered: Qt.exit(0)
-              }
+            }
+            Timer {
+              interval: 2000; running: true; repeat: false
+              onTriggered: Qt.exit(0)
             }
           }
           \""")
           loadqml(path)
           exec()
-        end
+        end;
 
 ```
 """
@@ -389,7 +385,7 @@ Get the context of `an_engine`. Equivalent to
 get a particular property. Use to get the context of an engine created with
 [`init_qmlengine`](@ref) before using [`set_data`](@ref) or from [`engine`](@ref).
 
-```jldoctest
+```jldoctest; filter = r"QML."
 julia> using QML
 
 julia> an_engine = init_qmlengine();
