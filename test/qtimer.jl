@@ -14,6 +14,7 @@ end
 
 qmlfile = joinpath(dirname(@__FILE__), "qml", "qtimer.qml")
 loadqml(qmlfile, timer=QTimer())
+GC.gc()
 exec()
 
 @test bg_counter > 100

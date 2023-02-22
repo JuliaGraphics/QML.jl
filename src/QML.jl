@@ -38,8 +38,34 @@ CxxWrap.argument_overloads(::Type{<:QString}) = [QString,String]
 
 @wrapfunctions
 
-@cxxdereference set_context_property(ctx::QQmlContext, name, value::QObject) = _set_context_property(ctx, QString(name), CxxPtr(value))
-@cxxdereference set_context_property(ctx::QQmlContext, name, value) = _set_context_property(ctx, QString(name), QVariant(value))
+# Protect items stored in a QML context from GC
+global __context_gc_protection = Dict{ConstCxxPtr{QQmlContext}, Vector{Any}}()
+
+# Clear GC protection list when the context is destroyed
+function on_context_destroyed(ctx)
+  ctx_cast = ConstCxxPtr{QQmlContext}(ctx[])
+  delete!(__context_gc_protection, ctx_cast)
+end
+
+function context_gc_protect(ctx::ConstCxxPtr{QQmlContext}, value)
+  if !haskey(__context_gc_protection, ctx)
+    __context_gc_protection[ctx] = Any[]
+    connect_destroyed_signal(ctx[], on_context_destroyed)
+  end
+  push!(__context_gc_protection[ctx], value)
+  return
+end
+
+@cxxdereference function set_context_property(ctx::QQmlContext, name, value::QObject)
+  context_gc_protect(ConstCxxPtr(ctx), value)
+  _set_context_property(ctx, QString(name), CxxPtr(value))
+  return
+end
+@cxxdereference function set_context_property(ctx::QQmlContext, name, value)
+  context_gc_protect(ConstCxxPtr(ctx), value)
+  _set_context_property(ctx, QString(name), QVariant(value))
+  return
+end
 
 function load_qml(qmlfilename, engine)
   ctx = root_context(CxxRef(engine))
@@ -378,8 +404,7 @@ Base.iterate(jpm::JuliaPropertyMap, state) = iterate(jpm.dict, state)
 Base.length(jpm::JuliaPropertyMap) = length(jpm.dict)
 
 @cxxdereference function set_context_property(ctx::QQmlContext, name, jpm::JuliaPropertyMap)
-  gc_name = "__jlcxx_gc_protect" * name
-  set_context_property(ctx, gc_name, QVariant(jpm)) # This is to protect the jpm object from GC
+  context_gc_protect(ConstCxxPtr(ctx), jpm) # This is to protect the jpm object from GC
   set_context_property(ctx, name, jpm.propertymap) # QML needs the QQmlPropertyMap
 end
 
