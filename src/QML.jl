@@ -145,7 +145,7 @@ function __init__()
   @require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a" include(joinpath(@__DIR__, "makie_support.jl"))
 
   loadqmljll(jlqml_jll.Qt6Declarative_jll)
-  # @require Qt5Charts_jll="dd720b4e-75c8-5196-993d-eac563881c8e" @eval loadqmljll(Qt5Charts_jll)
+  @require Qt65Compat_jll="f5784262-74e5-52be-b835-f3e8a3cf8710" @eval loadqmljll(Qt65Compat_jll)
 
   global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
   global APPLICATION = QGuiApplication(ARGV.argc, getargv(ARGV))
