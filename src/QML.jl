@@ -14,7 +14,12 @@ export qputenv, qgetenv, qunsetenv
 # TODO: Document: init_qmlapplicationengine
 # TODO: Document painter: device, effectiveDevicePixelRatio, height, JuliaCanvas, JuliaPaintedItem, logicalDpiX, logicalDpiY, width, window
 
-using jlqml_jll
+if haskey(ENV, "WAYLAND_DISPLAY") || get(ENV, "XDG_SESSION_TYPE", "") == "wayland"
+  # loading this automatially on Wayland ensures that applications run natively on Wayland without user intervention
+  using Qt6Wayland_jll
+end
+
+import jlqml_jll
 
 using CxxWrap
 using Observables
@@ -28,7 +33,7 @@ if isfile(envfile)
   include(envfile)
 end
 
-@readmodule libjlqml :define_julia_module Libdl.RTLD_GLOBAL
+@readmodule jlqml_jll.get_libjlqml_path :define_julia_module Libdl.RTLD_GLOBAL
 @wraptypes
 
 const QStringList = QList{QString}
