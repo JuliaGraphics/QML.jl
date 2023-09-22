@@ -16,8 +16,8 @@ jobs:
       matrix:
         version:
           - '1.6'
-          - '1.8'
-          - '^1.10.0-beta2'
+          - '1.9'
+          - 'nightly'
         os:
           - ubuntu-latest
           - macOS-latest
@@ -50,7 +50,6 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
-      - run: julia -e "using Pkg; Pkg.status(); Pkg.Registry.add(RegistrySpec(url = \"https://github.com/barche/CxxWrapTestRegistry.git\"))"
       - uses: julia-actions/julia-buildpkg@latest
       - name: install-xfvb
         if: runner.os == 'Linux'
