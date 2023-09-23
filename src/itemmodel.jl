@@ -56,7 +56,7 @@ end
 # By default, we just return the column or row number as header data
 defaultheaderdata(data, row_or_col, orientation, role) = row_or_col
 
-headerdata(m::ItemModelData, row_or_col, orientation, role) = QVariant(m.headerdata(m.values[], row_or_col, orientation, role))
+headerdata(m::ItemModelData, row_or_col, orientation, role) = QVariant(m.headerdata(m.values[], row_or_col, orientation[], role))
 
 """
   setheadergetter!(itemmodel::JuliaItemModel, f::Function)
@@ -105,8 +105,8 @@ end
 
 function setheaderdata!(itemmodel::JuliaItemModel, row_or_col, orientation, value, role)
   m = get_julia_data(itemmodel)
-  m.setheaderdata(m.values[], row_or_col, orientation, value, role)
-  emit_header_data_changed(itemmodel, orientation, row_or_col, row_or_col)
+  m.setheaderdata(m.values[], row_or_col, orientation[], value, role)
+  emit_header_data_changed(itemmodel, orientation[], row_or_col, row_or_col)
 end
 
 """
