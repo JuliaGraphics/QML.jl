@@ -26,7 +26,7 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
+      - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
       # Mesa install copied from https://github.com/microsoft/OpticSim.jl
@@ -50,7 +50,7 @@ jobs:
             ${{ runner.os }}-test-${{ env.cache-name }}-
             ${{ runner.os }}-test-
             ${{ runner.os }}-
-      - uses: julia-actions/julia-buildpkg@latest
+      - uses: julia-actions/julia-buildpkg@v1
       - name: install-xfvb
         if: runner.os == 'Linux'
         run: sudo apt-get install xvfb libxkbcommon-x11-0
@@ -61,7 +61,7 @@ jobs:
           XDG_RUNTIME_DIR: /tmp/runtime-runner
       - name: test-win-mac
         if: runner.os != 'Linux'
-        uses: julia-actions/julia-runtest@latest
+        uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
         env:
           DISABLE_AMEND_COVERAGE_FROM_SRC: yes
