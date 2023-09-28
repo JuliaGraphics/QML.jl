@@ -41,7 +41,7 @@ Pkg.instantiate()
 
 using QML
 include(joinpath(dirname(pathof(QML)), "runexamples.jl"))
-runexamples()
+runexamples(false) # use true as parameter to also run the Makie examples
 ```
 
 The above will run all the examples in series. To run a single example, include one of the files in the QmlJuliaExamples directory. For example, `include("board.jl")`.
