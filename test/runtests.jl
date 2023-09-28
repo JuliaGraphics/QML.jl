@@ -25,7 +25,7 @@ withenv("JULIA_LOAD_PATH" => nothing, "JULIA_GR_PROVIDER" => "BinaryBuilder") do
   mktempdir() do tmpd
     cd(tmpd) do
       examplesdir = mkdir("QmlJuliaExamples")
-      LibGit2.clone("https://github.com/barche/QmlJuliaExamples.git", examplesdir; branch="qt6")
+      LibGit2.clone("https://github.com/barche/QmlJuliaExamples.git", examplesdir)
       cd(examplesdir) do
         for d in ["basic", "images", "opengl", "plots"]
           cd(d) do 
