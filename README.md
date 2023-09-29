@@ -29,7 +29,8 @@ To run the examples, execute the following code block in the Julia REPL.
 
 ```julia
 # Alternatively, execute the git command directly in the shell or download the zip file
-isdir("QmlJuliaExamples") || run(`git clone --depth 1 https://github.com/barche/QmlJuliaExamples`)
+import LibGit2
+isdir("QmlJuliaExamples") || LibGit2.clone("https://github.com/barche/QmlJuliaExamples.git", "QmlJuliaExamples")
 cd("QmlJuliaExamples/basic") # or images, opengl or plots instead of the basic subdirectory
 
 # As an alternative to next three lines,
@@ -39,12 +40,10 @@ using Pkg
 Pkg.activate(".")
 Pkg.instantiate()
 
-using QML
-include(joinpath(dirname(pathof(QML)), "runexamples.jl"))
-runexamples(true) # use false as parameter to skip the Makie examples
+readdir() # Print list of example files
+include("gui.jl") # Or any of the files in the directory
 ```
 
-The above will run all the examples in series. To run a single example, include one of the files in the QmlJuliaExamples directory. For example, `include("board.jl")`.
 
 ### Loading a QML file
 We support three methods of loading a QML file: `QQmlApplicationEngine`, `QQuickView` and `QQmlComponent`. These behave equivalently to the corresponding Qt classes.
