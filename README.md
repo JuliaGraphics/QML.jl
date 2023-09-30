@@ -48,10 +48,10 @@ include("gui.jl") # Or any of the files in the directory
 ### Loading a QML file
 We support three methods of loading a QML file: `QQmlApplicationEngine`, `QQuickView` and `QQmlComponent`. These behave equivalently to the corresponding Qt classes.
 #### QQmlApplicationEngine
-The easiest way to run the QML file `main.qml` from the current directory is using the `load` function, which will create and return a `QQmlApplicationEngine` and load the supplied QML file:
+The easiest way to run the QML file `main.qml` from the current directory is using the `loadqml` function, which will create and return a `QQmlApplicationEngine` and load the supplied QML file:
 ```julia
 using QML
-load("main.qml")
+loadqml("main.qml")
 exec()
 ```
 
@@ -139,14 +139,14 @@ The value of a property can be queried from Julia like this:
 @test propmap["a"] == 1
 ```
 
-To pass these properties to the QML side, the property map can be the second argument to `load`:
+To pass these properties to the QML side, the property map can be the second argument to `loadqml`:
 ```julia
-load(qml_file, propmap)
+loadqml(qml_file, propmap)
 ```
 
 There is also a shorthand notation using keywords:
 ```julia
-load(qml_file, a=1, b=2)
+loadqml(qml_file, a=1, b=2)
 ```
 This will create context properties `a` and `b`, initialized to `1` and `2`.
 
@@ -164,7 +164,7 @@ on(output) do x
   println("Output changed to ", x)
 end
 
-load(qml_file, input=input, output=output)
+loadqml(qml_file, input=input, output=output)
 exec_async() # run from REPL for async execution
 ```
 
@@ -249,7 +249,7 @@ adds the role named `myrole` to `array_model`, using the function `myrole` to ac
 
 To use the model from QML, it can be exposed as a context attribute, e.g:
 ```julia
-load(qml_file, array_model=array_model)
+loadqml(qml_file, array_model=array_model)
 ```
 
 And then in QML:
@@ -300,7 +300,7 @@ end
 
 @qmlfunction counter_slot
 
-load(qml_file, timer=QTimer(), bg_counter=bg_counter)
+loadqml(qml_file, timer=QTimer(), bg_counter=bg_counter)
 ```
 
 Use in QML like this:
@@ -411,9 +411,9 @@ function paint_circle(buffer)
     end
  end
 
- load(qmlfile,
-      #...
-      paint_cfunction = CxxWrap.@safe_cfunction(paint_circle, Cvoid, (Array{UInt32,1}, Int32, Int32))
+ loadqml(qmlfile,
+         #...
+         paint_cfunction = CxxWrap.@safe_cfunction(paint_circle, Cvoid, (Array{UInt32,1}, Int32, Int32))
  )
 ```
 Note that the canvas buffer is allocated (and freed) in the C++ code.  A new unitialized buffer is allocated for each frame (this could change).
