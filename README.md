@@ -2,8 +2,8 @@
 
 [![Latest](https://img.shields.io/badge/docs-dev-blue.svg)](https://JuliaGraphics.github.io/QML.jl/dev)
 [![CodeCov](https://codecov.io/gh/JuliaGraphics/QML.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaGraphics/QML.jl)
-[![test-linux](https://github.com/JuliaGraphics/QML.jl/workflows/test-linux/badge.svg)](https://github.com/JuliaGraphics/QML.jl/actions?query=workflow%3Atest-linux)
-[![test-win-mac](https://github.com/JuliaGraphics/QML.jl/workflows/test-win-mac/badge.svg)](https://github.com/JuliaGraphics/QML.jl/actions?query=workflow%3Atest-win-mac)
+[![test](https://github.com/JuliaGraphics/QML.jl/workflows/test/badge.svg)](https://github.com/JuliaGraphics/QML.jl/actions?query=workflow%3Atest)
+
 
 This package provides an interface to [Qt6 QML](http://qt.io/) (and to Qt5 for older versions). It uses the [`CxxWrap`](https://github.com/JuliaInterop/CxxWrap.jl) package to expose C++ classes. Current functionality allows interaction between QML and Julia using [Observables](https://github.com/JuliaGizmos/Observables.jl), JuliaItemModels and function calling. There is also a generic Julia display, as well as specialized integration for image drawing, GR plots and Makie.
 
