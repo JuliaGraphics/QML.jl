@@ -167,9 +167,9 @@ julia> mktempdir() do folder
 JuliaDisplay
 
 """
-Module for building [Qt5 QML](http://doc.qt.io/qt-5/qtqml-index.html) graphical user interfaces for Julia programs.
+Module for building [Qt6 QML](http://doc.qt.io/qt-6/qtqml-index.html) graphical user interfaces for Julia programs.
 Types starting with `Q` are equivalent of their Qt C++ counterpart, so, unless otherwise noted, they have no Julia docstring and we refer to
-the [Qt documentation](http://doc.qt.io/qt-5/qtqml-index.html) for details instead.
+the [Qt documentation](http://doc.qt.io/qt-6/qtqml-index.html) for details instead.
 """
 QML
 
@@ -201,7 +201,7 @@ QByteArray
     struct QQmlApplicationEngine
 
 One of 3 ways to interact with QML (the others being [`QQuickView`](@ref) and
-[`QQmlComponent`](@ref). You can load a QML file to create an engine with [`load`](@ref).
+[`QQmlComponent`](@ref). You can load a QML file to create an engine with [`load`].
 Use [`exec`](@ref) to execute a file after it's been loaded.
 
 The lifetime of the `QQmlApplicationEngine` is managed from C++ and it gets cleaned up when
