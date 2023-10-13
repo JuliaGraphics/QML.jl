@@ -45,8 +45,7 @@ We need more people who help with improving the documentation, fixing bugs and w
 You can get in touch with the current developers either on [Discourse](https://discourse.julialang.org/) or via [JuliaGraphics](https://github.com/orgs/JuliaGraphics/discussions). 
 
 ## Creating a pull request
-If you made changes to the documentation (or any change to the code), please push these changes to your fork and then create a pull request. Before doing that make sure your fork is in sync with the main
-branch of QML.jl.
+If you made changes to the documentation (or any change to the code), please push these changes to your fork and then create a pull request by clicking on the "Contribute" button on the github page of your fork. Before doing that make sure your fork is in sync with the main branch of QML.jl.
 
 ## Related packages
 Some changes to QML.jl might require changes to one or more of the following, related packages:
