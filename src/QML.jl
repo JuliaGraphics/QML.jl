@@ -363,6 +363,8 @@ JuliaPropertyMap(dict::Dict{<:AbstractString,<:Any}) = JuliaPropertyMap(dict...)
 
 @cxxdereference value(::Type{JuliaPropertyMap}, qvar::QVariant) = getpropertymap(qvar)
 
+const _queued_properties = []
+
 # Functor to update a QML property when an Observable is changed in Julia
 struct QmlPropertyUpdater
   propertymap::QQmlPropertyMap
@@ -370,6 +372,10 @@ struct QmlPropertyUpdater
   active::Bool
 end
 function (updater::QmlPropertyUpdater)(x)
+  if Base.current_task() != Base.roottask
+    push!(_queued_properties, (updater, x))
+    return
+  end
   updater.propertymap[updater.key] = x
 end
 
@@ -594,19 +600,20 @@ include("itemmodel.jl")
 
 global _async_timer
 
-# Stop the async loop (called on quit from C++)
-function _stoptimer()
-  if !isdefined(QML, :_async_timer)
-    return
-  end
-  global _async_timer
-  if isopen(_async_timer)
-    close(_async_timer)
-  end
-end
-
 function exec_async()
-  global _async_timer = Timer((t) -> process_events(), 0.015; interval=0.015)
+  newrepl = @async Base.run_main_repl(true,true,true,true,true)
+  while !istaskdone(newrepl)
+      for (updater, x) in _queued_properties
+        updater.propertymap[updater.key] = x
+      end
+      empty!(_queued_properties)
+      process_events()
+      sleep(0.015)
+  end
+  QML.quit(QML.get_qmlengine())
+  QML.quit()
+  QML.cleanup()
+  QML.process_events()
   return
 end
 
