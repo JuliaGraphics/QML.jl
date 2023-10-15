@@ -1,15 +1,39 @@
 name: test
 on:
   - push
-  - pull_request
 
 defaults:
   run:
     shell: bash
 
 jobs:
+  buildjll:
+    name: Build JLL
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: '1.8'
+          arch: x64
+      - uses: julia-actions/cache@v1
+      - name: Build JLLs
+        env:
+          BINARYBUILDER_RUNNER: privileged
+          BINARYBUILDER_USE_SQUASHFS: true
+          BINARYBUILDER_AUTOMATIC_APPLE: true
+        run: |
+          cd .ci
+          julia --project -e "using Pkg; Pkg.instantiate()"
+          julia --project build_tarballs.jl --verbose
+      - name: Upload JLL artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: jlqml-binaries
+          path: .ci/products
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
+    needs: buildjll
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -39,23 +63,21 @@ jobs:
           "C:\Program Files\7-Zip\7z.exe" x mesa.7z
           mklink opengl32.dll "x64\opengl32.dll"
           mklink libglapi.dll "x64\libglapi.dll"
-      - name: Cache artifacts
-        uses: actions/cache@v1
-        env:
-          cache-name: cache-artifacts
-        with:
-          path: ~/.julia/artifacts 
-          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-test-${{ env.cache-name }}-
-            ${{ runner.os }}-test-
-            ${{ runner.os }}-
+      - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
+      - name: Download built jlqml artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: jlqml-binaries
+      - name: Dev jlqml_jll
+        run: |
+          julia --project -e "using Pkg; Pkg.develop(\"jlqml_jll\"); import jlqml_jll; jlqml_jll.dev_jll(); Pkg.add(\"CodecZlib\")"
+          julia --project .ci/override-jll.jl
       - name: install-xfvb
         if: runner.os == 'Linux'
         run: sudo apt-get install xvfb libxkbcommon-x11-0
       - name: test-linux
-        if: runner.os == 'Linux' && matrix.version != '1.6'
+        if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum julia --color=yes --check-bounds=yes --project -e 'using Pkg; Pkg.test(coverage=true)'
         env:
           XDG_RUNTIME_DIR: /tmp/runtime-runner
