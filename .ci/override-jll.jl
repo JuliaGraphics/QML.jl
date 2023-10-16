@@ -1,3 +1,8 @@
+if isfile("NOBUILD")
+  println("Using registered JLL binaries")
+  exit(0)
+end
+
 using Tar, jlqml_jll, CodecZlib
 
 tarball = "undefined"

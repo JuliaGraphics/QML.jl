@@ -2,7 +2,7 @@
 # Note that this script can accept some limited command-line arguments, run
 # `julia build_tarballs.jl --help` to see a usage message.
 using BinaryBuilder, Pkg, TOML
-import LibGit2
+import LibGit2, Downloads
 
 # See https://github.com/JuliaLang/Pkg.jl/issues/2942
 # Once this Pkg issue is resolved, this must be removed
@@ -21,11 +21,19 @@ end
 
 name = "jlqml"
 
-LibGit2.clone("https://github.com/JuliaGraphics/jlqml.git", name)
+jlqml_repo = LibGit2.clone("https://github.com/JuliaGraphics/jlqml.git", name)
+head_commit = string(LibGit2.head_oid(jlqml_repo))
+yggdrasil_buildscript = String(take!(Downloads.download("https://raw.githubusercontent.com/JuliaPackaging/Yggdrasil/master/J/jlqml/build_tarballs.jl",IOBuffer())))
+yggdrasil_up_to_date = contains(yggdrasil_buildscript, head_commit)
+
+if yggdrasil_up_to_date
+    touch(joinpath(mkdir("products"), "NOBUILD"))
+    exit(0)
+end
 
 version = getversion(joinpath(name, "CMakeLists.txt"))
 
-julia_versions = [v"1.6.3", v"1.9", v"1.11"]
+julia_versions = [v"1.9", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [
