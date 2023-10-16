@@ -1,0 +1,38 @@
+import QML
+import LibGit2
+
+withenv("JULIA_LOAD_PATH" => nothing, "JULIA_GR_PROVIDER" => "BinaryBuilder") do
+  mktempdir() do tmpd
+    cd(tmpd) do
+      examplesdir = mkdir("QmlJuliaExamples")
+      LibGit2.clone("https://github.com/barche/QmlJuliaExamples.git", examplesdir)
+      cd(examplesdir) do
+        for d in ["basic", "images", "opengl", "plots"]
+          cd(d) do 
+            allowmakie = true
+            if get(ENV, "CI", "false") == "true" && (Sys.isapple() || Sys.iswindows())
+              allowmakie = false
+              filtered = filter(l -> !contains(l, "Makie"), collect(eachline("Project.toml")))
+              open("Project.toml", "w") do output
+                for l in filtered
+                  println(output, l)
+                end
+              end
+            end
+
+            qmlpath = replace(dirname(dirname(pathof(QML))), "\\" => "/")
+            cxxpath = replace(dirname(dirname(pathof(QML.CxxWrap))), "\\" => "/")
+            updatecommand = """
+              using Pkg
+              Pkg.develop([PackageSpec(path="$qmlpath"), PackageSpec(path="$cxxpath")])
+              Pkg.precompile()
+            """
+            run(`$(Base.julia_cmd()) --project -e "$updatecommand"`)
+            QML.runexamples(allowmakie)
+          end
+        end
+      end
+    end
+    println(pwd())
+  end
+end

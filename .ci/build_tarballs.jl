@@ -25,7 +25,7 @@ LibGit2.clone("https://github.com/JuliaGraphics/jlqml.git", name)
 
 version = getversion(joinpath(name, "CMakeLists.txt"))
 
-julia_versions = [v"1.9.0"]
+julia_versions = [v"1.6.3", v"1.9", v"1.11"]
 
 # Collection of sources required to complete build
 sources = [

@@ -75,7 +75,7 @@ jobs:
           julia --project .ci/override-jll.jl
       - name: install-xfvb
         if: runner.os == 'Linux'
-        run: sudo apt-get install xvfb libxkbcommon-x11-0
+        run: sudo apt-get install xvfb libxkbcommon-x11-0 libgl1-mesa-dri
       - name: test-linux
         if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum julia --color=yes --check-bounds=yes --project -e 'using Pkg; Pkg.test(coverage=true)'
@@ -84,6 +84,16 @@ jobs:
       - name: test-win-mac
         if: runner.os != 'Linux'
         uses: julia-actions/julia-runtest@v1
+      - name: examples-linux
+        if: runner.os == 'Linux'
+        run: xvfb-run --auto-servernum julia --project test/runexamples.jl
+        env:
+          XDG_RUNTIME_DIR: /tmp/runtime-runner
+        continue-on-error: true
+      - name: examples-win-mac
+        if: runner.os != 'Linux'
+        run: julia --project test/runexamples.jl
+        continue-on-error: true
       - uses: julia-actions/julia-processcoverage@v1
         env:
           DISABLE_AMEND_COVERAGE_FROM_SRC: yes
