@@ -48,7 +48,7 @@ const ScreenArea = GLMakie.ScreenArea
   return (Int(QML.width(fbosize)), Int(QML.height(fbosize)))
 end
 
-mutable struct QMLScreen <: GLMakie.GLScreen
+mutable struct QMLScreen <: GLMakie.Makie.MakieScreen
   glscreen::QMLGLContext
   shader_cache::GLAbstraction.ShaderCache
   screen2scene::Dict{WeakRef, ScreenID}
