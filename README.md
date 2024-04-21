@@ -41,7 +41,7 @@ Pkg.activate(".")
 Pkg.instantiate()
 
 readdir() # Print list of example files
-include("gui.jl") # Or any of the files in the directory
+include("filedialog.jl") # Or any of the files in the directory
 ```
 
 
