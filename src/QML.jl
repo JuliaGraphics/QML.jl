@@ -1,7 +1,7 @@
 module QML
 
 export QVariant, QString, QUrl
-export QQmlContext, root_context, loadqml, qt_prefix_path, set_source, engine, QByteArray, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, QVariantMap
+export QQmlContext, root_context, loadqml, watchqml, qt_prefix_path, set_source, engine, QByteArray, QQmlComponent, set_data, create, QQuickItem, content_item, QTimer, context_property, emit, JuliaDisplay, JuliaCanvas, qmlcontext, init_qmlapplicationengine, init_qmlengine, init_qquickview, exec, exec_async, QVariantMap
 export JuliaPropertyMap
 export QStringList, QVariantList
 export JuliaItemModel, addrole!, roles, roleindex, setgetter!, setsetter!, setheadergetter!, setheadersetter!
@@ -100,6 +100,32 @@ function loadqml(qmlfilename; kwargs...)
     cleanup()
     rethrow()
   end
+end
+
+function watchqml(engine::CxxPtr{QQmlApplicationEngine}, qmlfile)
+  function clearcache(path)
+    rootobject = first(QML.rootObjects(engine))
+    QML.deleteLater(rootobject)
+    QML.clearComponentCache(engine)
+    QML.load_into_engine(engine, path)
+  end
+
+  watcher = QML.QFileSystemWatcher(engine)
+  QML.addPath(watcher, qmlfile)
+  QML.connect_file_changed_signal(watcher, clearcache)
+end
+
+function watchqml(qview::CxxPtr{QQuickView}, qmlfile)
+  engine = QML.engine(qview)
+
+  function clearcache(path)
+    QML.clearComponentCache(engine)
+    set_source(qview, QUrlFromLocalFile(path))
+  end
+  
+  watcher = QML.QFileSystemWatcher(engine)
+  QML.addPath(watcher, qmlfile)
+  QML.connect_file_changed_signal(watcher, clearcache)
 end
 
 const _loaded_qml_modules = Module[]
