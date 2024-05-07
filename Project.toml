@@ -19,7 +19,7 @@ CxxWrap = "0.15.1"
 MacroTools = "0.5"
 Observables = "0.5"
 Requires = "1.0"
-jlqml_jll = "0.6.0"
+jlqml_jll = "0.6.1"
 julia = "1.6"
 
 [extras]
