@@ -118,7 +118,7 @@ ApplicationWindow {
     Item {
 
       Layout.alignment: Qt.AlignCenter
-      Layout.preferredWidth: 100
+      Layout.preferredWidth: 300
       Layout.preferredHeight: 200
 
       HorizontalHeaderView {

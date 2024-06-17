@@ -73,7 +73,6 @@ end
 end
 
 function load_qml(qmlfilename, engine)
-  ctx = root_context(CxxRef(engine))
   if !load_into_engine(engine, QString(qmlfilename))
     error("Failed to load QML file ", qmlfilename)
   end
@@ -96,8 +95,8 @@ function loadqml(qmlfilename; kwargs...)
   try
     return load_qml(qmlfilename, qml_engine)
   catch
-    cleanup()
     QML.process_events()
+    cleanup()
     rethrow()
   end
 end
