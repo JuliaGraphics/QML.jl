@@ -7,108 +7,47 @@ defaults:
     shell: bash
 
 jobs:
-  buildjll:
-    name: Build JLL
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
-        with:
-          version: '1.8'
-          arch: x64
-      - uses: julia-actions/cache@v1
-      - name: Build JLLs
-        env:
-          BINARYBUILDER_RUNNER: privileged
-          BINARYBUILDER_USE_SQUASHFS: true
-          BINARYBUILDER_AUTOMATIC_APPLE: true
-        run: |
-          cd .ci
-          julia --project -e "using Pkg; Pkg.instantiate()"
-          julia --project build_tarballs.jl --verbose
-      - name: Upload JLL artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: jlqml-binaries
-          path: .ci/products
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
-    needs: buildjll
+    name: julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         version:
-          - "1.6"
-          - "1"
-          - "nightly"
+          - '1.6'
+          - '1'
+          - 'nightly'
         os:
           - ubuntu-latest
-          - macOS-latest
           - windows-latest
+          - macos-latest
         arch:
           - x64
         include:
+          - os: ubuntu-latest
+            prefix: xvfb-run
+          - os: windows-latest
+            version: '1'
+            arch: x86
           - os: macos-14
             arch: aarch64
-            version: "1"
-          - os: macos-14
-            arch: aarch64
-            version: "nightly"
+            version: '1'
+          - os: ubuntu-latest
+            version: '1.6'
+            prefix: xvfb-run
+            env:
+              LIBGL_ALWAYS_SOFTWARE: 1
+              GALLIUM_DRIVER: softpipe
     steps:
       - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.version }}
-      # Mesa install copied from https://github.com/microsoft/OpticSim.jl
-      - name: Install Mesa (Windows only)
-        if: runner.os == 'Windows'
-        shell: cmd
-        working-directory: ${{ steps.setup-julia.outputs.julia-bindir }}
-        run: |
-          curl.exe -L --output mesa.7z --url https://github.com/pal1000/mesa-dist-win/releases/download/21.3.5/mesa3d-21.3.5-release-msvc.7z
-          "C:\Program Files\7-Zip\7z.exe" x mesa.7z
-          mklink opengl32.dll "x64\opengl32.dll"
-          mklink libglapi.dll "x64\libglapi.dll"
-      - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-buildpkg@v1
-      - name: Download built jlqml artifact
-        uses: actions/download-artifact@v3
+          arch: ${{ matrix.arch }}
+      - uses: julia-actions/julia-buildpkg@latest
+      - uses: julia-actions/julia-runtest@latest
         with:
-          name: jlqml-binaries
-      - name: Dev jlqml_jll
-        run: |
-          julia --project -e "using Pkg; Pkg.develop(\"jlqml_jll\"); import jlqml_jll; jlqml_jll.dev_jll(); Pkg.add(\"CodecZlib\")"
-          julia --project .ci/override-jll.jl
-      - name: install-xfvb
-        if: runner.os == 'Linux'
-        run: sudo apt-get install xvfb libxkbcommon-x11-0 libgl1-mesa-dri
-      - name: test-linux
-        if: runner.os == 'Linux'
-        run: xvfb-run --auto-servernum julia --color=yes --check-bounds=yes --project -e 'using Pkg; Pkg.test(coverage=true)'
-        env:
-          XDG_RUNTIME_DIR: /tmp/runtime-runner
-      - name: test-win-mac
-        if: runner.os != 'Linux'
-        uses: julia-actions/julia-runtest@v1
-      - name: examples-linux
-        if: runner.os == 'Linux'
-        run: xvfb-run --auto-servernum julia --project test/runexamples.jl
-        env:
-          XDG_RUNTIME_DIR: /tmp/runtime-runner
-        continue-on-error: true
-      - name: examples-win-mac
-        if: runner.os != 'Linux'
-        run: julia --project test/runexamples.jl
-        continue-on-error: true
-      - uses: julia-actions/julia-processcoverage@v1
+          prefix: ${{ matrix.prefix }}
+      - uses: julia-actions/julia-processcoverage@latest
         env:
           DISABLE_AMEND_COVERAGE_FROM_SRC: yes
-      - uses: codecov/codecov-action@v1
-        with:
-          file: ./lcov.info
-          fail_ci_if_error: false
-      - uses: domluna/JuliaFormatter-action@master
-        with:
-          args: -v .
-        continue-on-error: true
