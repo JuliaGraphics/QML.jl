@@ -8,6 +8,7 @@ Base.:+(a::QML.ItemDataRole, b::Integer) = convert(Int32,a) + b
 # Allow roles as keys in Dicts:
 Base.trailing_zeros(role::ItemDataRole) = Base.trailing_zeros(convert(Int32,role))
 Base.:(>>)(a::ItemDataRole, b::Int64) = convert(Int32, a) >> b
+Base.:(>>)(a::ItemDataRole, b::Int32) = convert(Int32, a) >> b
 mutable struct ItemModelData{DataT}
   values::Observable{DataT}
   roles::RoleNames

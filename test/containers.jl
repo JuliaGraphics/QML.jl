@@ -44,12 +44,12 @@ let h = QML.QHash{Int32,QML.QByteArray}()
   @test isempty(h)
 end
 
-let numbers = Int32[1,2,3,4], model = JuliaItemModel(numbers)
+let numbers = [1,2,3,4], model = JuliaItemModel(numbers)
   modeldata = QML.get_julia_data(model)
   @test QML.rowcount(modeldata) == 4
   @test QML.colcount(modeldata) == 1
   @test QML.value(QML.data(modeldata, QML.DisplayRole,3,1)) == "3"
-  @test QML.setdata!(model, QVariant(Int32(5)), QML.EditRole, 3, 1)
+  @test QML.setdata!(model, QVariant(5), QML.EditRole, 3, 1)
   @test QML.value(QML.data(modeldata, QML.DisplayRole,3,1)) == "5"
   @test QML.value(QML.headerdata(modeldata, 2, QML.Vertical, QML.DisplayRole)) == 2
   @test_logs (:warn,"Setting header data is not supported in this model") QML.setheaderdata!(model, 1, QML.Vertical, QML.EditRole, "One")

@@ -10,3 +10,4 @@
 CMakeLists.txt.user
 /Manifest.toml
 /docs/build
+.vscode
