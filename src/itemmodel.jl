@@ -104,9 +104,9 @@ function defaultsetheaderdata!(data, row_or_col, orientation, value, role)
   return
 end
 
-function setheaderdata!(itemmodel::JuliaItemModel, row_or_col, orientation, value, role)
+@cxxdereference function setheaderdata!(itemmodel::JuliaItemModel, row_or_col, orientation, value, role)
   m = get_julia_data(itemmodel)
-  m.setheaderdata(m.values[], row_or_col, orientation[], value, role)
+  m.setheaderdata(m.values[], row_or_col, orientation[], QML.value(value), role)
   emit_header_data_changed(itemmodel, orientation[], row_or_col, row_or_col)
 end
 

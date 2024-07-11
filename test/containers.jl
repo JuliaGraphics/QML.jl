@@ -52,5 +52,5 @@ let numbers = [1,2,3,4], model = JuliaItemModel(numbers)
   @test QML.setdata!(model, QVariant(5), QML.EditRole, 3, 1)
   @test QML.value(QML.data(modeldata, QML.DisplayRole,3,1)) == "5"
   @test QML.value(QML.headerdata(modeldata, 2, QML.Vertical, QML.DisplayRole)) == 2
-  @test_logs (:warn,"Setting header data is not supported in this model") QML.setheaderdata!(model, 1, QML.Vertical, QML.EditRole, "One")
+  @test_logs (:warn,"Setting header data is not supported in this model") QML.setheaderdata!(model, 1, QML.Vertical, QVariant("One"), QML.EditRole)
 end
