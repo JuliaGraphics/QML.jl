@@ -172,8 +172,6 @@ end
 function __init__()
   @initcxx
 
-  @require GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a" include(joinpath(@__DIR__, "makie_support.jl"))
-
   loadqmljll(jlqml_jll.Qt6Declarative_jll)
   @require Qt65Compat_jll = "f5784262-74e5-52be-b835-f3e8a3cf8710" @eval loadqmljll(Qt65Compat_jll)
 
