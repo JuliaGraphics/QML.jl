@@ -4,9 +4,9 @@ const RoleNames = QHash{Int32,QByteArray}
 const FunctionCollection = Dict{Int32,Any}
 
 # Hack to add numbers and roles
-Base.:+(a::QML.ItemDataRole, b::Integer) = convert(Int32,a) + b
+Base.:+(a::QML.ItemDataRole, b::Integer) = convert(Int32, a) + b
 # Allow roles as keys in Dicts:
-Base.trailing_zeros(role::ItemDataRole) = Base.trailing_zeros(convert(Int32,role))
+Base.trailing_zeros(role::ItemDataRole) = Base.trailing_zeros(convert(Int32, role))
 Base.:(>>)(a::ItemDataRole, b::Int64) = convert(Int32, a) >> b
 Base.:(>>)(a::ItemDataRole, b::Int32) = convert(Int32, a) >> b
 mutable struct ItemModelData{DataT}
@@ -25,8 +25,8 @@ mutable struct ItemModelData{DataT}
 end
 
 Base.values(itemmodel::JuliaItemModel) = get_julia_data(itemmodel).values
-rowcount(m::ItemModelData) = Int32(Base.size(m.values[],1))
-colcount(m::ItemModelData) = Int32(Base.size(m.values[],2))
+rowcount(m::ItemModelData) = Int32(Base.size(m.values[], 1))
+colcount(m::ItemModelData) = Int32(Base.size(m.values[], 2))
 rolenames(m::ItemModelData) = m.roles
 
 function rolegetter(m::ItemModelData, role::Integer)
@@ -35,11 +35,11 @@ function rolegetter(m::ItemModelData, role::Integer)
 end
 
 function isvalidindex(values, row, col)
-  if row ∉ axes(values,1)
+  if row ∉ axes(values, 1)
     @warn "row $row is out of range for listmodel"
     return false
   end
-  if col ∉ axes(values,2)
+  if col ∉ axes(values, 2)
     @warn "column $col is out of range for listmodel"
     return false
   end
@@ -51,7 +51,7 @@ function data(m::ItemModelData, role::Integer, row::Integer, col::Integer)
     return QVariant()
   end
   rolefunc = rolegetter(m, role)
-  return QVariant(rolefunc(m.values[][row,col]))
+  return QVariant(rolefunc(m.values[][row, col]))
 end
 
 # By default, we just return the column or row number as header data
@@ -69,7 +69,7 @@ Set `f` as function to call when getting header data. The signature of of should
 Here, `data` is the internal data array stored in the model, `row_or_col` is the index of the row or column,
 `orientation` is either `QML.Horizontal` for column headers or `QML.Vertical` for row headers
 and `role` is an integer describing the role
-(e.g. QML.DisplayRole) 
+(e.g. QML.DisplayRole)
 """
 setheadergetter!(itemmodel::JuliaItemModel, f::Function) = (get_julia_data(itemmodel).headerdata = f)
 
@@ -117,7 +117,7 @@ Set `f` as function to call when setting header data. The signature of of should
 ```
   f(data, row_or_col, orientation, value, role)
 ```
-Here, `value` is the value for the given header item. The other arguments are the same as in [`setheadergetter!`](@ref) 
+Here, `value` is the value for the given header item. The other arguments are the same as in [`setheadergetter!`](@ref)
 """
 setheadersetter!(itemmodel::JuliaItemModel, f::Function) = (get_julia_data(itemmodel).setheaderdata = f)
 
@@ -155,9 +155,9 @@ function append_row!(m::ItemModelData, row::QVariantMap)
       @warn "Can't append row $row, not all columns were found"
     end
     if rowcount(m) > 0
-      newrow = deepcopy(m.values[][end]) 
+      newrow = deepcopy(m.values[][end])
       push!(m.values[], newrow)
-      for (rolename,val) in row
+      for (rolename, val) in row
         roleidx = roleindex(m, string(rolename))
         rowidx = rowcount(m)
         m.setters[roleidx](m.values[], value(val), rowidx, 1)
@@ -194,16 +194,16 @@ function insert_row!(m::ItemModelData, rowidx, row::AbstractVector{QVariant})
   end
   ValT = typeof(m.values[])
   startidx = axes(m.values[])[1][1]
-  m.values[] = vcat(m.values[][startidx:rowidx-1,:], ValT(value.(row)'), m.values[][rowidx:end,:])
+  m.values[] = vcat(m.values[][startidx:rowidx-1, :], ValT(value.(row)'), m.values[][rowidx:end, :])
   return
 end
 
 function make_move_permutation(values, fromidx, toidx, nbitems, dim)
-  permutation = collect(axes(values,dim))
-  fromrange = fromidx:fromidx+nbitems-1  
+  permutation = collect(axes(values, dim))
+  fromrange = fromidx:fromidx+nbitems-1
   deleteat!(permutation, fromrange)
-  for (i,x) in  enumerate(fromrange)
-    insert!(permutation, toidx+i-1, x)
+  for (i, x) in enumerate(fromrange)
+    insert!(permutation, toidx + i - 1, x)
   end
   return permutation
 end
@@ -218,7 +218,7 @@ end
   if ndims(values) == 1
     values .= values[permutation]
   else
-    values .= values[permutation,:]
+    values .= values[permutation, :]
   end
   end_move_rows(m)
 end
@@ -232,11 +232,11 @@ end
 @cxxdereference function set_row!(m::JuliaItemModel, rowidx, row::QVariant)
   modeldata = get_julia_data(m)
   set_row!(modeldata, rowidx, value(row))
-  emit_data_changed(m, rowidx, 1, rowidx, Base.size(modeldata.values[],2))
+  emit_data_changed(m, rowidx, 1, rowidx, Base.size(modeldata.values[], 2))
 end
 
 function set_row!(modeldata::ItemModelData, rowidx, row::AbstractVector{QVariant})
-  modeldata.values[][rowidx,:] .= value.(row)
+  modeldata.values[][rowidx, :] .= value.(row)
 end
 
 @cxxdereference function append_column!(m::JuliaItemModel, column::QVariant)
@@ -248,7 +248,7 @@ end
 end
 
 function append_column!(m::ItemModelData, column::AbstractVector{QVariant})
-  newcol = similar(m.values[], eltype(m.values[]), (length(column),1))
+  newcol = similar(m.values[], eltype(m.values[]), (length(column), 1))
   newcol .= value.(column)
   m.values[] = hcat(m.values[], newcol)
 end
@@ -263,7 +263,7 @@ end
 function insert_column!(m::ItemModelData, columnidx, column::AbstractVector{QVariant})
   ValT = typeof(m.values[])
   startidx = axes(m.values[])[2][1]
-  m.values[] = hcat(m.values[][:,startidx:columnidx-1], ValT(value.(column)), m.values[][:,columnidx:end])
+  m.values[] = hcat(m.values[][:, startidx:columnidx-1], ValT(value.(column)), m.values[][:, columnidx:end])
   return
 end
 
@@ -284,13 +284,13 @@ end
   headervalues = []
   if m.setheaderdata != defaultsetheaderdata!
     for i in 1:colcount(m)
-      if !(columnidx <= i < columnidx+ncolumns)
+      if !(columnidx <= i < columnidx + ncolumns)
         push!(headervalues, m.headerdata(m.values[], i, QML.Horizontal, DisplayRole))
       end
     end
   end
-  m.values[] = hcat(m.values[][:,1:columnidx-1], m.values[][:,(columnidx+ncolumns):end])
-  for (i,h) in enumerate(headervalues)
+  m.values[] = hcat(m.values[][:, 1:columnidx-1], m.values[][:, (columnidx+ncolumns):end])
+  for (i, h) in enumerate(headervalues)
     m.setheaderdata(m.values[], i, QML.Horizontal, h, EditRole)
   end
   end_remove_columns(itemmodel)
@@ -299,11 +299,11 @@ end
 @cxxdereference function set_column!(m::JuliaItemModel, columnidx, column::QVariant)
   modeldata = get_julia_data(m)
   set_column!(modeldata, columnidx, value(column))
-  emit_data_changed(m, 1, columnidx, Base.size(modeldata.values[],1), columnidx)
+  emit_data_changed(m, 1, columnidx, Base.size(modeldata.values[], 1), columnidx)
 end
 
 function set_column!(modeldata::ItemModelData, columnidx, column::AbstractVector{QVariant})
-  modeldata.values[][:,columnidx] .= value.(column)
+  modeldata.values[][:, columnidx] .= value.(column)
 end
 
 clear!(m::ItemModelData) = empty!(m.values[])
@@ -409,11 +409,11 @@ hasrole(m::ItemModelData, rolename) = rolename ∈ values(m.roles)
 hasrole(lm::JuliaItemModel, rolename) = hasrole(get_julia_data(lm), rolename)
 function nextroleindex(roles)
   sortedkeys = sort(keys(roles))
-  return max(UserRole,sortedkeys[end]+1)
+  return max(UserRole, sortedkeys[end] + 1)
 end
 
 function roleindex(m::ItemModelData, rolename)
-  for (idx,val) in m.roles
+  for (idx, val) in m.roles
     if string(val) == rolename
       return idx
     end

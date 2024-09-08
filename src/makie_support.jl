@@ -51,12 +51,12 @@ end
 mutable struct QMLScreen <: GLMakie.GLScreen
   glscreen::QMLGLContext
   shader_cache::GLAbstraction.ShaderCache
-  screen2scene::Dict{WeakRef, ScreenID}
+  screen2scene::Dict{WeakRef,ScreenID}
   screens::Vector{ScreenArea}
-  renderlist::Vector{Tuple{ZIndex, ScreenID, RenderObject}}
+  renderlist::Vector{Tuple{ZIndex,ScreenID,RenderObject}}
   postprocessors::Vector{GLMakie.PostProcessor}
-  cache::Dict{UInt64, RenderObject}
-  cache2plot::Dict{UInt32, AbstractPlot}
+  cache::Dict{UInt64,RenderObject}
+  cache2plot::Dict{UInt32,AbstractPlot}
   framecache::Matrix{RGB{N0f8}}
   framebuffer::GLMakie.GLFramebuffer
   # render_tick::Observable{Nothing}
@@ -71,17 +71,17 @@ mutable struct QMLScreen <: GLMakie.GLScreen
     newscreen = new(
       ctx,
       shader_cache,
-      Dict{WeakRef, ScreenID}(),
+      Dict{WeakRef,ScreenID}(),
       ScreenArea[],
-      Tuple{ZIndex, ScreenID, RenderObject}[],
+      Tuple{ZIndex,ScreenID,RenderObject}[],
       [
         enable_SSAO[] ? GLMakie.ssao_postprocessor(fb, shader_cache) : GLMakie.empty_postprocessor(),
         GLMakie.OIT_postprocessor(fb, shader_cache),
         enable_FXAA[] ? GLMakie.fxaa_postprocessor(fb, shader_cache) : GLMakie.empty_postprocessor(),
         to_qmlscreen_postprocessor(fb, shader_cache)
       ],
-      Dict{UInt64, RenderObject}(),
-      Dict{UInt32, AbstractPlot}(),
+      Dict{UInt64,RenderObject}(),
+      Dict{UInt32,AbstractPlot}(),
       Matrix{RGB{N0f8}}(undef, fbosize),
       fb,
       # Observable(nothing),
@@ -111,7 +111,7 @@ function GLMakie.render_frame(screen::QMLScreen; resize_buffers=true)
   w, h = sizetuple(screen.glscreen.fbo)
   fb = screen.framebuffer
   if resize_buffers
-    resize!(fb, (w,h))
+    resize!(fb, (w, h))
   end
 
   # prepare stencil (for sub-scenes)
@@ -165,7 +165,7 @@ function GLMakie.render_frame(screen::QMLScreen; resize_buffers=true)
   glStencilMask(0x00)
   # Render only transparent objects
   GLAbstraction.render(screen) do robj
-      return Bool(robj[:transparency][])
+    return Bool(robj[:transparency][])
   end
   glDisable(GL_STENCIL_TEST)
 
@@ -207,13 +207,13 @@ function to_qmlscreen_postprocessor(framebuffer, shader_cache)
 end
 
 function Base.empty!(screen::QMLScreen)
-    empty!(screen.renderlist)
-    empty!(screen.screen2scene)
-    empty!(screen.screens)
+  empty!(screen.renderlist)
+  empty!(screen.screen2scene)
+  empty!(screen.screens)
 end
 
 function Base.display(screen::QMLScreen, scene::Scene)
-  scene.events.window_area[] = Makie.IRect(0,0,sizetuple(screen.glscreen.fbo)...)
+  scene.events.window_area[] = Makie.IRect(0, 0, sizetuple(screen.glscreen.fbo)...)
   empty!(screen)
   insertplots!(screen, scene)
   # Makie.update!(scene)

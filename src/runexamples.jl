@@ -16,22 +16,22 @@ function runexamples(allowmakie)
 
   for fname in readdir()
     if endswith(fname, ".jl") && fname ∉ excluded
-      if any(Base.contains.(readlines(fname),"exec_async"))
+      if any(Base.contains.(readlines(fname), "exec_async"))
         println("Skipping async example $fname")
         continue
       end
-      if any(Base.contains.(readlines(fname),"GKSwstype"))
+      if any(Base.contains.(readlines(fname), "GKSwstype"))
         println("Skipping GR example $fname")
         continue
       end
-      if !allowmakie && any(Base.contains.(readlines(fname),"Makie"))
+      if !allowmakie && any(Base.contains.(readlines(fname), "Makie"))
         println("Skipping GR example $fname")
         continue
       end
       println("running example ", fname, "...")
       outbuf = IOBuffer()
       errbuf = IOBuffer()
-      testproc = run(pipeline(`$(Base.julia_cmd()) --project $fname`; stdout=outbuf, stderr=errbuf); wait = false)
+      testproc = run(pipeline(`$(Base.julia_cmd()) --project $fname`; stdout=outbuf, stderr=errbuf); wait=false)
       current_time = 0.0
       timestep = 0.1
       errstr = ""

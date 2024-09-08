@@ -39,12 +39,12 @@ end
 const QStringList = QList{QString}
 
 # Make sure functions accepting a QString argument also accept a Julia string
-CxxWrap.argument_overloads(::Type{<:QString}) = [QString,String]
+CxxWrap.argument_overloads(::Type{<:QString}) = [QString, String]
 
 @wrapfunctions
 
 # Protect items stored in a QML context from GC
-global __context_gc_protection = Dict{ConstCxxPtr{QQmlContext}, Vector{Any}}()
+global __context_gc_protection = Dict{ConstCxxPtr{QQmlContext},Vector{Any}}()
 
 # Clear GC protection list when the context is destroyed
 function on_context_destroyed(ctx)
@@ -89,7 +89,7 @@ Load a QML file, creating a [`QML.QQmlApplicationEngine`](@ref), and setting the
 function loadqml(qmlfilename; kwargs...)
   qml_engine = init_qmlapplicationengine()
   ctx = root_context(CxxRef(qml_engine))
-  for (key,value) in kwargs
+  for (key, value) in kwargs
     set_context_property(ctx, String(key), value)
   end
   try
@@ -121,7 +121,7 @@ function watchqml(qview::CxxPtr{QQuickView}, qmlfile)
     QML.clearComponentCache(engine)
     set_source(qview, QUrlFromLocalFile(path))
   end
-  
+
   watcher = QML.QFileSystemWatcher(engine)
   QML.addPath(watcher, qmlfile)
   QML.connect_file_changed_signal(watcher, clearcache)
@@ -172,10 +172,10 @@ end
 function __init__()
   @initcxx
 
-  @require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a" include(joinpath(@__DIR__, "makie_support.jl"))
+  @require GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a" include(joinpath(@__DIR__, "makie_support.jl"))
 
   loadqmljll(jlqml_jll.Qt6Declarative_jll)
-  @require Qt65Compat_jll="f5784262-74e5-52be-b835-f3e8a3cf8710" @eval loadqmljll(Qt65Compat_jll)
+  @require Qt65Compat_jll = "f5784262-74e5-52be-b835-f3e8a3cf8710" @eval loadqmljll(Qt65Compat_jll)
 
   global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
   global APPLICATION = QGuiApplication(ARGV.argc, getargv(ARGV))
@@ -185,17 +185,17 @@ end
 QString(s::String) = fromStdWString(StdWString(s))
 Base.ncodeunits(s::QString)::Int = cppsize(s)
 Base.codeunit(s::QString) = UInt16
-Base.codeunit(s::QString, i::Integer) = uint16char(s, i-1)
-Base.isvalid(s::QString, i::Integer) = isvalidindex(s, i-1)
+Base.codeunit(s::QString, i::Integer) = uint16char(s, i - 1)
+Base.isvalid(s::QString, i::Integer) = isvalidindex(s, i - 1)
 function Base.iterate(s::QString, i::Integer=1)
-  if !isvalid(s,i)
+  if !isvalid(s, i)
     return nothing
   end
-  (charcode, nexti) = get_iterate(s,i-1)
+  (charcode, nexti) = get_iterate(s, i - 1)
   if nexti == -1
     return nothing
   end
-  return(Char(charcode),nexti+1)
+  return (Char(charcode), nexti + 1)
 end
 Base.convert(::Type{<:QString}, s::String) = QString(s)
 QString(u::QUrl) = toString(u)
@@ -210,11 +210,11 @@ const QVariantList = QList{QVariant}
 const QVariantMap = QMap{QString,QVariant}
 
 # Conversion to the strongly-typed QVariant interface
-@inline QVariant(x) = QVariant(Any,x)
+@inline QVariant(x) = QVariant(Any, x)
 @inline QVariant(x::T) where {T<:Union{Number,Ref,CxxWrap.SafeCFunction,QVariantMap,Nothing}} = QVariant(T, x)
-@inline QVariant(x::AbstractString) = QVariant(QString,QString(x))
-@inline QVariant(x::QString) = QVariant(QString,x)
-@inline QVariant(x::QObject) = QVariant(CxxPtr{QObject},CxxPtr(x))
+@inline QVariant(x::AbstractString) = QVariant(QString, QString(x))
+@inline QVariant(x::QString) = QVariant(QString, x)
+@inline QVariant(x::QObject) = QVariant(CxxPtr{QObject}, CxxPtr(x))
 @inline QVariant(x::QVariant) = x
 
 QVariant(::Type{Bool}, b::Bool) = QVariant(CxxBool, CxxBool(b))
@@ -231,9 +231,9 @@ end
 @inline @cxxdereference setValue(v::QVariant, x::T) where {T} = setValue(T, v, x)
 QVariant(::Type{Nothing}, ::Nothing) = QVariant()
 @cxxdereference value(::Type{Nothing}, ::QML.QVariant) = nothing
-@cxxdereference value(v::QVariant) = CxxWrap.dereference_argument(value(type(v),v))
+@cxxdereference value(v::QVariant) = CxxWrap.dereference_argument(value(type(v), v))
 Base.convert(::Type{QVariant}, x::T) where {T} = QVariant(x)
-Base.convert(::Type{T}, x::QVariant) where {T} = convert(T,value(x))
+Base.convert(::Type{T}, x::QVariant) where {T} = convert(T, value(x))
 Base.convert(::Type{Any}, x::QVariant) = x
 Base.convert(::Type{<:QVariant}, x::QVariant) = x
 
@@ -242,29 +242,29 @@ Base.convert(::Type{<:QVariant}, x::QVariant) = x
 # QList
 Base.IndexStyle(::Type{<:QList}) = IndexLinear()
 Base.size(v::QList) = (Int(cppsize(v)),)
-Base.getindex(v::QList, i::Int) = cppgetindex(v,i-1)[]
-Base.setindex!(v::QList{T}, val, i::Int) where {T} = cppsetindex!(v, convert(T,val), i-1)
+Base.getindex(v::QList, i::Int) = cppgetindex(v, i - 1)[]
+Base.setindex!(v::QList{T}, val, i::Int) where {T} = cppsetindex!(v, convert(T, val), i - 1)
 function Base.push!(v::QList{T}, x) where {T}
-  push_back(v, convert(T,x))
+  push_back(v, convert(T, x))
   return v
 end
 Base.empty!(l::QList) = clear(l)
-Base.deleteat!(l::QList, i::Integer) = removeAt(l, i-1)
+Base.deleteat!(l::QList, i::Integer) = removeAt(l, i - 1)
 
 # QHash
 Base.isempty(h::QHash) = empty(h)
 Base.length(h::QHash) = Int(cppsize(h))
 Base.haskey(h::QHash, key) = QML.contains(h, key)
 function Base.getindex(h::QHash{K,V}, key) where {K,V}
-  if !haskey(h,key)
+  if !haskey(h, key)
     throw(KeyError(key))
   end
-  return cppgetindex(h, convert(K,key))[]
+  return cppgetindex(h, convert(K, key))[]
 end
-Base.setindex!(h::QHash{K,V}, val, key) where {K,V} = cppsetindex!(h, convert(V,val), convert(K,key))
+Base.setindex!(h::QHash{K,V}, val, key) where {K,V} = cppsetindex!(h, convert(V, val), convert(K, key))
 Base.empty!(h::QHash) = clear(h)
-Base.delete!(h::QHash{K,V}, key) where {K,V} = remove(h, convert(K,key))
-Base.:(==)(a::QHashIterator, b::QHashIterator) = iteratorisequal(a,b)
+Base.delete!(h::QHash{K,V}, key) where {K,V} = remove(h, convert(K, key))
+Base.:(==)(a::QHashIterator, b::QHashIterator) = iteratorisequal(a, b)
 function _qhash_iteration_tuple(h::QHash, state::QHashIterator)
   if state == iteratorend(h)
     return nothing
@@ -281,15 +281,15 @@ Base.isempty(h::QMap) = empty(h)
 Base.length(h::QMap) = Int(cppsize(h))
 Base.haskey(h::QMap, key) = QML.contains(h, key)
 function Base.getindex(h::QMap{K,V}, key) where {K,V}
-  if !haskey(h,key)
+  if !haskey(h, key)
     throw(KeyError(key))
   end
-  return cppgetindex(h, convert(K,key))[]
+  return cppgetindex(h, convert(K, key))[]
 end
-Base.setindex!(h::QMap{K,V}, val, key) where {K,V} = cppsetindex!(h, convert(V,val), convert(K,key))
+Base.setindex!(h::QMap{K,V}, val, key) where {K,V} = cppsetindex!(h, convert(V, val), convert(K, key))
 Base.empty!(h::QMap) = clear(h)
-Base.delete!(h::QMap{K,V}, key) where {K,V} = remove(h, convert(K,key))
-Base.:(==)(a::QMapIterator, b::QMapIterator) = iteratorisequal(a,b)
+Base.delete!(h::QMap{K,V}, key) where {K,V} = remove(h, convert(K, key))
+Base.:(==)(a::QMapIterator, b::QMapIterator) = iteratorisequal(a, b)
 function _qmap_iteration_tuple(h::QMap, state::QMapIterator)
   if state == iteratorend(h)
     return nothing
@@ -309,7 +309,7 @@ function julia_call(f, argptr::Ptr{Cvoid})
 end
 
 function get_julia_call()
-  return @cfunction(julia_call, Ptr{Cvoid}, (Any,Ptr{Cvoid}))
+  return @cfunction(julia_call, Ptr{Cvoid}, (Any, Ptr{Cvoid}))
 end
 
 # QQmlPropertyMap indexing interface
@@ -322,10 +322,10 @@ function on_value_changed end
 
 mutable struct JuliaPropertyMap <: AbstractDict{String,Any}
   propertymap::_JuliaPropertyMap
-  dict::Dict{String, Any}
+  dict::Dict{String,Any}
 
   function JuliaPropertyMap()
-    result = new(_JuliaPropertyMap(), Dict{String, Any}())
+    result = new(_JuliaPropertyMap(), Dict{String,Any}())
     set_julia_value(result.propertymap, result)
     connect_value_changed(result.propertymap, result, on_value_changed)
     finalizer(result) do jpm
@@ -379,7 +379,7 @@ julia> mktempdir() do folder
 """
 function JuliaPropertyMap(pairs::Pair{<:AbstractString,<:Any}...)
   result = JuliaPropertyMap()
-  for (k,v) in pairs
+  for (k, v) in pairs
     result[k] = v
   end
   return result
@@ -404,7 +404,7 @@ function (updater::QmlPropertyUpdater)(x)
   updater.propertymap[updater.key] = x
 end
 
-setactive!(::Any,::Bool) = nothing
+setactive!(::Any, ::Bool) = nothing
 setactive!(updater::QmlPropertyUpdater, active::Bool) = (updater.active = active)
 
 Base.getindex(jpm::JuliaPropertyMap, k::AbstractString) = jpm.dict[k]
@@ -413,7 +413,7 @@ Base.get(jpm::JuliaPropertyMap, k::AbstractString, def) = get(jpm.dict, k, def)
 function Base.delete!(jpm::JuliaPropertyMap, k::AbstractString)
   storedvalue = jpm.dict[k]
   if storedvalue isa Observable
-    for (_,observer) in filter(x -> x[2] isa QmlPropertyUpdater, Observables.listeners(storedvalue))
+    for (_, observer) in filter(x -> x[2] isa QmlPropertyUpdater, Observables.listeners(storedvalue))
       if observer.propertymap == jpm.propertymap
         off(storedvalue, observer)
       end
@@ -600,8 +600,8 @@ function Base.display(d::JuliaDisplay, x)
   supported_types = (MIME"image/svg+xml"(), MIME"image/png"())
   write_methods = (load_svg, load_png)
   written = false
-  for (t,write_method) in zip(supported_types, write_methods)
-    if showable(t,x)
+  for (t, write_method) in zip(supported_types, write_methods)
+    if showable(t, x)
       Base.show(buf, t, x)
       write_method(d, take!(buf))
       written = true
@@ -609,7 +609,7 @@ function Base.display(d::JuliaDisplay, x)
     end
   end
   if !written
-    throw(MethodError(display, (d,x)))
+    throw(MethodError(display, (d, x)))
   end
 
 end
@@ -626,14 +626,14 @@ include("itemmodel.jl")
 global _async_timer
 
 function exec_async()
-  newrepl = @async Base.run_main_repl(true,true,true,true,true)
+  newrepl = @async Base.run_main_repl(true, true, true, true, true)
   while !istaskdone(newrepl)
-      for (updater, x) in _queued_properties
-        updater.propertymap[updater.key] = x
-      end
-      empty!(_queued_properties)
-      process_events()
-      sleep(0.015)
+    for (updater, x) in _queued_properties
+      updater.propertymap[updater.key] = x
+    end
+    empty!(_queued_properties)
+    process_events()
+    sleep(0.015)
   end
   QML.quit(QML.get_qmlengine())
   QML.quit()
