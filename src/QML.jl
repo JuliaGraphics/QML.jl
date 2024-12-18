@@ -623,10 +623,13 @@ end
 
 include("itemmodel.jl")
 
-global _async_timer
-
 function exec_async()
-  newrepl = @async Base.run_main_repl(true,true,true,true,true)
+  if VERSION >= v"1.11-"
+    newrepl = @async Base.run_main_repl(true,true,:yes,true,true)
+  else
+    newrepl = @async Base.run_main_repl(true,true,true,true,true)
+  end
+
   while !istaskdone(newrepl)
       for (updater, x) in _queued_properties
         updater.propertymap[updater.key] = x
