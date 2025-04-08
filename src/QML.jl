@@ -359,22 +359,34 @@ julia> mktempdir() do folder
          write(path, \"""
          import QtQuick
          import QtQuick.Controls
+         import org.julialang
          ApplicationWindow {
            visible: true
            Slider {
+             value: observables.output
              onValueChanged: {
                observables.output = value;
              }
            }
+           // Timer only needed for doctests
            Timer {
-             running: true; repeat: false
-             onTriggered: Qt.exit(0)
+             running: !Julia.isinteractive(); repeat: false
+             onTriggered: {
+               observables.output = 0.5
+               Qt.exit(0)
+             }
            }
          }
          \""")
+         @qmlfunction isinteractive # For doctest
          loadqml(path; observables = JuliaPropertyMap("output" => output))
-         exec()
+         if isinteractive()
+           exec_async()
+         else
+           exec() # for doctest
+         end
        end
+0.5
 ```
 """
 function JuliaPropertyMap(pairs::Pair{<:AbstractString,<:Any}...)
