@@ -116,7 +116,7 @@ However, the macro cannot be used in the case of non-exported functions from a d
 
 In QML, include the Julia API:
 ```qml
-import org.julialang
+import jlqml
 ```
 
 Then call a Julia function in QML using:
@@ -308,7 +308,7 @@ Use in QML like this:
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import org.julialang
+import jlqml
 
 ApplicationWindow {
     title: "My Application"
@@ -445,6 +445,10 @@ This should display the result of the plotting command in the QML window.
 For further examples, see the [`documentation`](https://JuliaGraphics.github.io/QML.jl/dev).
 
 ## Breaking changes
+
+### Upgrade from v0.9 to 0.10
+* The QML module name has been changed from `org.julialang` to just `jlqml`, so `import org.julialang` needs to be replaced with `import jlqml` in all QML files.
+* Makie support has been moved to the QMLMakie package
 
 ### Upgrade from v0.6 to v0.7
 * Julia 1.6 minimal requirement

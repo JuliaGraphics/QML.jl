@@ -67,7 +67,7 @@ The referred `frommodule.qml` file is expected in a subdirectory called `qml`, w
 ```qml
 import QtQuick
 import QtQuick.Controls
-import org.julialang
+import jlqml
 
 ApplicationWindow {
   id: mainWin

@@ -141,7 +141,7 @@ julia> mktempdir() do folder
           import QtQuick
           import QtQuick.Controls
           import QtQuick.Layouts
-          import org.julialang
+          import jlqml
           ApplicationWindow {
             visible: true
             JuliaDisplay {
@@ -342,7 +342,7 @@ julia> mktempdir() do folder
           write(path, \"""
           import QtQuick
           import QtQuick.Controls
-          import org.julialang
+          import jlqml
           ApplicationWindow {
               visible: true
               Connections {

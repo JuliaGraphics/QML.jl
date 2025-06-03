@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.qmlmodels
-import org.julialang
+import jlqml
 
 ApplicationWindow {
   title: "Arrays"
