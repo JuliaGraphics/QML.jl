@@ -1,5 +1,5 @@
 import QtQuick
-import org.julialang
+import jlqml
 
 Timer {
      interval: 200; running: true; repeat: false

@@ -24,7 +24,9 @@ import jlqml_jll
 using CxxWrap
 using Observables
 import Libdl
-using Requires
+if !isdefined(Base, :get_extension)
+  using Requires
+end
 using ColorTypes
 using MacroTools: @capture
 
@@ -172,10 +174,11 @@ end
 function __init__()
   @initcxx
 
-  @require GLMakie="e9467ef8-e4e7-5192-8a1a-b1aee30e663a" include(joinpath(@__DIR__, "makie_support.jl"))
-
   loadqmljll(jlqml_jll.Qt6Declarative_jll)
-  @require Qt65Compat_jll="f5784262-74e5-52be-b835-f3e8a3cf8710" @eval loadqmljll(Qt65Compat_jll)
+
+  @static if !isdefined(Base, :get_extension)
+    @require Qt65Compat_jll="f5784262-74e5-52be-b835-f3e8a3cf8710" include("../ext/Qt65CompatExt.jl")
+  end
 
   global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
   global APPLICATION = QGuiApplication(ARGV.argc, getargv(ARGV))
@@ -359,7 +362,7 @@ julia> mktempdir() do folder
          write(path, \"""
          import QtQuick
          import QtQuick.Controls
-         import org.julialang
+         import jlqml
          ApplicationWindow {
            visible: true
            Slider {
@@ -522,7 +525,7 @@ julia> mktempdir() do folder
           import QtQuick
           import QtQuick.Controls
           import QtQuick.Layouts
-          import org.julialang
+          import jlqml
           ApplicationWindow {
               visible: true
               Column {
@@ -558,7 +561,7 @@ end
 
 Register Julia functions for access from QML under their own name. Function names must be
 valid in QML, e.g. they can't contain `!`. You can use your newly registered functions in
-QML by first importing `org.julialang 1.0`, and then calling them with
+QML by first importing `jlqml`, and then calling them with
 `Julia.function_name(arguments...)`. If you would like to register a function under a
 different name, use [`qmlfunction`](@ref). This will be necessary for non-exported functions
 from a different module or in case the function contains a `!` character.
@@ -573,7 +576,7 @@ julia> @qmlfunction greet
 julia> mktempdir() do folder
           path = joinpath(folder, "main.qml")
           write(path, \"""
-          import org.julialang
+          import jlqml
           import QtQuick
           import QtQuick.Controls
           ApplicationWindow {

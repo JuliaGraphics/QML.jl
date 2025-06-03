@@ -1,5 +1,5 @@
 import QtQuick
-import org.julialang
+import jlqml
 
 Item {
   Timer {
