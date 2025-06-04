@@ -19,7 +19,7 @@ CxxWrap = "0.17"
 MacroTools = "0.5"
 Observables = "0.5"
 jlqml_jll = "0.7.0"
-julia = "1.6"
+julia = "1.10"
 
 [weakdeps]
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
