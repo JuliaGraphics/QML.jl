@@ -178,6 +178,7 @@ function __init__()
 
   @static if !isdefined(Base, :get_extension)
     @require Qt65Compat_jll="f5784262-74e5-52be-b835-f3e8a3cf8710" include("../ext/Qt65CompatExt.jl")
+    @require Qt6Quick3D_jll="6dc365b9-5e99-58d6-8812-efce7277b6ef" include("../ext/Qt6ChartsExt.jl")
   end
 
   global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
@@ -639,11 +640,15 @@ end
 include("itemmodel.jl")
 
 function exec_async()
+  lastdisplay = popdisplay()
   if VERSION >= v"1.11-"
     newrepl = @async Base.run_main_repl(true,true,:yes,true,true)
   else
     newrepl = @async Base.run_main_repl(true,true,true,true,true)
   end
+
+  sleep(0.015)
+  pushdisplay(lastdisplay)
 
   while !istaskdone(newrepl)
       for (updater, x) in _queued_properties
