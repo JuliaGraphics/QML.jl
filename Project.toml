@@ -25,10 +25,12 @@ julia = "1.10"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 Qt65Compat_jll = "f5784262-74e5-52be-b835-f3e8a3cf8710"
 Qt6Quick3D_jll = "6dc365b9-5e99-58d6-8812-efce7277b6ef"
+Qt6Graphs_jll = "7aac1016-a7e0-562a-8747-d0456fd6285f"
 
 [extensions]
 Qt65CompatExt = "Qt65Compat_jll"
 Qt6Quick3DExt = "Qt6Quick3D_jll"
+Qt6GraphsExt = "Qt6Graphs_jll"
 
 [extras]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
