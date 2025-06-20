@@ -448,7 +448,7 @@ For further examples, see the [`documentation`](https://JuliaGraphics.github.io/
 
 ### Upgrade from v0.9 to 0.10
 * The QML module name has been changed from `org.julialang` to just `jlqml`, so `import org.julialang` needs to be replaced with `import jlqml` in all QML files.
-* Makie support has been moved to the QMLMakie package
+* Makie support has been moved to the [QMLMakie](https://github.com/steffenhaug/QMLMakie.jl) package
 
 ### Upgrade from v0.6 to v0.7
 * Julia 1.6 minimal requirement
