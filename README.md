@@ -447,8 +447,13 @@ For further examples, see the [`documentation`](https://JuliaGraphics.github.io/
 ## Breaking changes
 
 ### Upgrade from v0.9 to 0.10
+
 * The QML module name has been changed from `org.julialang` to just `jlqml`, so `import org.julialang` needs to be replaced with `import jlqml` in all QML files.
-* Makie support has been moved to the [QMLMakie](https://github.com/steffenhaug/QMLMakie.jl) package
+* Makie support has been moved to the [QMLMakie](https://github.com/JuliaGraphics/QMLMakie.jl) package, so this needs to be installed with `add QMLMakie`.
+
+### Upgrade from v0.6 to v0.8
+
+This moves the package to Qt 6. Aside from this, the JuliaItemModel was changed extensively, refer to the [test](https://github.com/JuliaGraphics/QML.jl/blob/main/test/tableview.jl) and [examples](https://github.com/barche/QmlJuliaExamples/blob/master/basic/tableview.jl) to see how to use it.
 
 ### Upgrade from v0.6 to v0.7
 * Julia 1.6 minimal requirement
@@ -460,6 +465,3 @@ For further examples, see the [`documentation`](https://JuliaGraphics.github.io/
 * No more automatic conversion from `String` to `QUrl`, use the `QUrl("mystring")` constructor
 * Setting a `QQmlPropertyMap` as context object is not supported as of Qt 5.12
 
-### Upgrade from v0.6 to v0.8
-
-This moves the package to Qt 6. Aside from this, the JuliaItemModel was changed extensively, refer to the [test](https://github.com/JuliaGraphics/QML.jl/blob/main/test/tableview.jl) and [examples](https://github.com/barche/QmlJuliaExamples/blob/master/basic/tableview.jl) to see how to use it.

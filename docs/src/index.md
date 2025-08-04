@@ -88,6 +88,10 @@ ApplicationWindow {
 }
 ```
 
+## Makie support
+
+Make support is provided by the separate [QMLMakie](https://github.com/JuliaGraphics/QMLMakie.jl) package, which can be installed as usual using `add QMLMakie`. 
+
 ## Interface
 
 ```@index
