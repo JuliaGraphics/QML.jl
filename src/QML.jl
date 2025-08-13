@@ -24,9 +24,6 @@ import jlqml_jll
 using CxxWrap
 using Observables
 import Libdl
-if !isdefined(Base, :get_extension)
-  using Requires
-end
 using ColorTypes
 using MacroTools: @capture
 
@@ -175,12 +172,6 @@ function __init__()
   @initcxx
 
   loadqmljll(jlqml_jll.Qt6Declarative_jll)
-
-  @static if !isdefined(Base, :get_extension)
-    @require Qt65Compat_jll="f5784262-74e5-52be-b835-f3e8a3cf8710" include("../ext/Qt65CompatExt.jl")
-    @require Qt6Quick3D_jll="6dc365b9-5e99-58d6-8812-efce7277b6ef" include("../ext/Qt6Quick3DExt.jl")
-    @require Qt6Graphs_jll="6dc365b9-5e99-58d6-8812-efce7277b6ef" include("../ext/Qt6GraphsExt.jl")
-  end
 
   global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
   global APPLICATION = QGuiApplication(ARGV.argc, getargv(ARGV))
