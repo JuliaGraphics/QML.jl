@@ -29,9 +29,10 @@ rowcount(m::ItemModelData) = Int32(Base.size(m.values[],1))
 colcount(m::ItemModelData) = Int32(Base.size(m.values[],2))
 rolenames(m::ItemModelData) = m.roles
 
-function rolegetter(m::ItemModelData, role::Integer)
-  @assert haskey(m.getters, role)
-  return m.getters[role]
+function rolegetter(m::ItemModelData, role)
+  roleint = Int(role)
+  @assert haskey(m.getters, roleint)
+  return m.getters[roleint]
 end
 
 function isvalidindex(values, row, col)
@@ -46,7 +47,7 @@ function isvalidindex(values, row, col)
   return true
 end
 
-function data(m::ItemModelData, role::Integer, row::Integer, col::Integer)
+function data(m::ItemModelData, role, row::Integer, col::Integer)
   if !isvalidindex(m.values[], row, col)
     return QVariant()
   end
@@ -57,7 +58,7 @@ end
 # By default, we just return the column or row number as header data
 defaultheaderdata(data, row_or_col, orientation, role) = row_or_col
 
-headerdata(m::ItemModelData, row_or_col, orientation, role) = QVariant(m.headerdata(m.values[], row_or_col, orientation[], role))
+headerdata(m::ItemModelData, row_or_col, orientation, role) = QVariant(m.headerdata(m.values[], row_or_col, orientation, role))
 
 """
   setheadergetter!(itemmodel::JuliaItemModel, f::Function)
@@ -73,7 +74,8 @@ and `role` is an integer describing the role
 """
 setheadergetter!(itemmodel::JuliaItemModel, f::Function) = (get_julia_data(itemmodel).headerdata = f)
 
-@cxxdereference function setdata!(itemmodel::JuliaItemModel, val::QVariant, role::Integer, row::Integer, col::Integer)
+@cxxdereference function setdata!(itemmodel::JuliaItemModel, val::QVariant, roleenum, row::Integer, col::Integer)
+  role = Int(roleenum)
   m = get_julia_data(itemmodel)
   if !isvalidindex(m.values[], row, col)
     return false
@@ -106,8 +108,8 @@ end
 
 @cxxdereference function setheaderdata!(itemmodel::JuliaItemModel, row_or_col, orientation, value, role)
   m = get_julia_data(itemmodel)
-  m.setheaderdata(m.values[], row_or_col, orientation[], QML.value(value), role)
-  emit_header_data_changed(itemmodel, orientation[], row_or_col, row_or_col)
+  m.setheaderdata(m.values[], row_or_col, orientation, QML.value(value), role)
+  emit_header_data_changed(itemmodel, orientation, row_or_col, row_or_col)
 end
 
 """
@@ -409,7 +411,7 @@ hasrole(m::ItemModelData, rolename) = rolename ∈ values(m.roles)
 hasrole(lm::JuliaItemModel, rolename) = hasrole(get_julia_data(lm), rolename)
 function nextroleindex(roles)
   sortedkeys = sort(keys(roles))
-  return max(UserRole,sortedkeys[end]+1)
+  return max(Int(UserRole),sortedkeys[end]+1)
 end
 
 function roleindex(m::ItemModelData, rolename)
@@ -425,12 +427,12 @@ roleindex(lm::JuliaItemModel, rolename) = roleindex(get_julia_data(lm), rolename
 
 setgetter!(lm::JuliaItemModel, getter, roleidx) = setgetter!(get_julia_data(lm), getter, roleidx)
 function setgetter!(m::ItemModelData, getter, roleidx)
-  m.getters[roleidx] = getter
+  m.getters[Int(roleidx)] = getter
 end
 
 setsetter!(lm::JuliaItemModel, setter, roleidx) = setsetter!(get_julia_data(lm), setter, roleidx)
 function setsetter!(m::ItemModelData, setter, roleidx)
-  m.setters[roleidx] = setter
+  m.setters[Int(roleidx)] = setter
 end
 
 """
