@@ -1,7 +1,7 @@
 name = "QML"
 uuid = "2db162a6-7e43-52c3-8d84-290c1c42d82a"
+version = "0.10.2"
 authors = ["Bart Janssens <bart@bartjanssens.org>"]
-version = "0.10.1"
 
 [deps]
 ColorTypes = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
@@ -10,29 +10,26 @@ Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Observables = "510215fc-4207-5dde-b226-833fc4488ee2"
 Qt6Wayland_jll = "e99dba38-086e-5de3-a5b1-6e4c66e897c3"
-Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 jlqml_jll = "6b5019fb-a83d-5b4e-a9f7-678a36c28df7"
+
+[weakdeps]
+Qt65Compat_jll = "f5784262-74e5-52be-b835-f3e8a3cf8710"
+Qt6Graphs_jll = "7aac1016-a7e0-562a-8747-d0456fd6285f"
+Qt6Quick3D_jll = "6dc365b9-5e99-58d6-8812-efce7277b6ef"
+
+[extensions]
+Qt65CompatExt = "Qt65Compat_jll"
+Qt6GraphsExt = "Qt6Graphs_jll"
+Qt6Quick3DExt = "Qt6Quick3D_jll"
 
 [compat]
 ColorTypes = "0.11, 0.12"
 CxxWrap = "0.17"
 MacroTools = "0.5"
 Observables = "0.5"
-jlqml_jll = "0.7.1"
 Qt6Wayland_jll = "6.8"
-Requires = "1.3"
+jlqml_jll = "0.7.1"
 julia = "1.10"
-
-[weakdeps]
-Requires = "ae029012-a4dd-5104-9daa-d747884805df"
-Qt65Compat_jll = "f5784262-74e5-52be-b835-f3e8a3cf8710"
-Qt6Quick3D_jll = "6dc365b9-5e99-58d6-8812-efce7277b6ef"
-Qt6Graphs_jll = "7aac1016-a7e0-562a-8747-d0456fd6285f"
-
-[extensions]
-Qt65CompatExt = "Qt65Compat_jll"
-Qt6Quick3DExt = "Qt6Quick3D_jll"
-Qt6GraphsExt = "Qt6Graphs_jll"
 
 [extras]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
