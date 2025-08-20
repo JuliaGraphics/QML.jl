@@ -446,6 +446,10 @@ For further examples, see the [`documentation`](https://JuliaGraphics.github.io/
 
 ## Breaking changes
 
+### Upgrade from v0.10 to 0.11
+
+The Qt `enum` types (e.g. `QML.Orientation` from the item model) are now mapped to complete Julia `@enum` types, to accommodate working with the newly added mouse and keyboard enums. This implies that they are no longer automatically considered as an `Integer`, which may in rare cases cause an error in code that relies on this.
+
 ### Upgrade from v0.9 to 0.10
 
 * The QML module name has been changed from `org.julialang` to just `jlqml`, so `import org.julialang` needs to be replaced with `import jlqml` in all QML files.

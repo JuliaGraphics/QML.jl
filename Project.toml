@@ -1,6 +1,6 @@
 name = "QML"
 uuid = "2db162a6-7e43-52c3-8d84-290c1c42d82a"
-version = "0.10.2"
+version = "0.11"
 authors = ["Bart Janssens <bart@bartjanssens.org>"]
 
 [deps]
@@ -28,7 +28,7 @@ CxxWrap = "0.17"
 MacroTools = "0.5"
 Observables = "0.5"
 Qt6Wayland_jll = "6.8"
-jlqml_jll = "0.7.1"
+jlqml_jll = "0.8.0"
 julia = "1.10"
 
 [extras]
