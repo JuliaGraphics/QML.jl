@@ -412,6 +412,32 @@ function (updater::QmlPropertyUpdater)(x)
   updater.propertymap[updater.key] = x
 end
 
+# mechanisms to postpone calls to the event loop when running in exec_async
+const _deferred_calls = Channel{Function}(Inf)
+
+function run_deferred_calls()
+  while isready(_deferred_calls)
+    take!(_deferred_calls)()
+  end
+end
+
+# Prepend functon calls with this macro to defer execution to the event loop
+macro deferredcall(expr)
+  if !(expr isa Expr && expr.head == :call)
+    error("@deferredcall expects a function call")
+  end
+
+  quote
+    if Base.current_task() === Base.roottask
+      $(esc(expr))
+    else
+      put!(_deferred_calls, () -> $(esc(expr)))
+      nothing
+    end
+  end
+end
+
+
 setactive!(::Any,::Bool) = nothing
 setactive!(updater::QmlPropertyUpdater, active::Bool) = (updater.active = active)
 
@@ -631,9 +657,28 @@ end
 
 include("itemmodel.jl")
 
+function exec()
+  # We redirect to the Core stdout/err in case threading is used
+  # Note that the standard redirect_stdio doesn't work on the Core streams
+  saved_stdout = Base.stdout
+  saved_stderr = Base.stderr
+  Base.stdout = Core.stdout
+  Base.stderr = Core.stderr
+  try
+    app_exec()
+  catch e
+    showerror(stderr, e, catch_backtrace())
+  end
+  Base.stdout = saved_stdout
+  Base.stderr = saved_stderr
+  return
+end
+
 function exec_async()
   lastdisplay = popdisplay()
-  if VERSION >= v"1.11-"
+  if VERSION >= v"1.12-"
+    newrepl = @async Base.run_main_repl(true,true,:yes,true)
+  elseif VERSION >= v"1.11-"
     newrepl = @async Base.run_main_repl(true,true,:yes,true,true)
   else
     newrepl = @async Base.run_main_repl(true,true,true,true,true)
@@ -647,6 +692,7 @@ function exec_async()
         updater.propertymap[updater.key] = x
       end
       empty!(_queued_properties)
+      run_deferred_calls()
       process_events()
       sleep(0.015)
   end

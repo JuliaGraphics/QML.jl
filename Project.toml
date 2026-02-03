@@ -1,6 +1,6 @@
 name = "QML"
 uuid = "2db162a6-7e43-52c3-8d84-290c1c42d82a"
-version = "0.11"
+version = "0.12.0"
 authors = ["Bart Janssens <bart@bartjanssens.org>"]
 
 [deps]
@@ -24,11 +24,11 @@ Qt6Quick3DExt = "Qt6Quick3D_jll"
 
 [compat]
 ColorTypes = "0.11, 0.12"
-CxxWrap = "0.17"
+CxxWrap = "0.17.5"
 MacroTools = "0.5"
 Observables = "0.5"
 Qt6Wayland_jll = "6.8"
-jlqml_jll = "0.8.0"
+jlqml_jll = "0.9.0"
 julia = "1.10"
 
 [extras]
