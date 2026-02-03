@@ -87,7 +87,7 @@ setheadergetter!(itemmodel::JuliaItemModel, f::Function) = (get_julia_data(itemm
     else
       m.setters[role](m.values[], value(val), row, col)
     end
-    emit_data_changed(itemmodel, row, col, row, col)
+    @deferredcall emit_data_changed(itemmodel, row, col, row, col)
     return true
   catch e
     rolename = rolenames(m)[role]
@@ -109,7 +109,7 @@ end
 @cxxdereference function setheaderdata!(itemmodel::JuliaItemModel, row_or_col, orientation, value, role)
   m = get_julia_data(itemmodel)
   m.setheaderdata(m.values[], row_or_col, orientation, QML.value(value), role)
-  emit_header_data_changed(itemmodel, orientation, row_or_col, row_or_col)
+  @deferredcall emit_header_data_changed(itemmodel, orientation, row_or_col, row_or_col)
 end
 
 """
@@ -145,7 +145,7 @@ end
   idx = rowcount(modeldata) + 1
   begin_insert_rows(m, idx, idx)
   append_row!(modeldata, value(row))
-  end_insert_rows(m)
+  @deferredcall end_insert_rows(m)
 end
 
 function append_row!(m::ItemModelData, row::QVariantMap)
@@ -185,7 +185,7 @@ end
   modeldata = get_julia_data(m)
   begin_insert_rows(m, rowidx, rowidx)
   insert_row!(modeldata, rowidx, value(row))
-  end_insert_rows(m)
+  @deferredcall end_insert_rows(m)
 end
 
 function insert_row!(m::ItemModelData, rowidx, row::AbstractVector{QVariant})
@@ -222,19 +222,19 @@ end
   else
     values .= values[permutation,:]
   end
-  end_move_rows(m)
+  @deferredcall end_move_rows(m)
 end
 
 @cxxdereference function remove_rows!(m::JuliaItemModel, rowidx, nrows)
   begin_remove_rows(m, rowidx, nrows)
   deleteat!(get_julia_data(m).values[], rowidx:rowidx+nrows-1)
-  end_remove_rows(m)
+  @deferredcall end_remove_rows(m)
 end
 
 @cxxdereference function set_row!(m::JuliaItemModel, rowidx, row::QVariant)
   modeldata = get_julia_data(m)
   set_row!(modeldata, rowidx, value(row))
-  emit_data_changed(m, rowidx, 1, rowidx, Base.size(modeldata.values[],2))
+  @deferredcall emit_data_changed(m, rowidx, 1, rowidx, Base.size(modeldata.values[],2))
 end
 
 function set_row!(modeldata::ItemModelData, rowidx, row::AbstractVector{QVariant})
@@ -246,7 +246,7 @@ end
   idx = colcount(modeldata) + 1
   begin_insert_columns(m, idx, idx)
   append_column!(modeldata, value(column))
-  end_insert_columns(m)
+  @deferredcall end_insert_columns(m)
 end
 
 function append_column!(m::ItemModelData, column::AbstractVector{QVariant})
@@ -259,7 +259,7 @@ end
   modeldata = get_julia_data(m)
   begin_insert_columns(m, columnidx, columnidx)
   insert_column!(modeldata, columnidx, value(column))
-  end_insert_columns(m)
+  @deferredcall end_insert_columns(m)
 end
 
 function insert_column!(m::ItemModelData, columnidx, column::AbstractVector{QVariant})
@@ -277,7 +277,7 @@ end
   end
   permutation = make_move_permutation(values, fromidx, toidx, nbcolumns, 2)
   values .= values[:, permutation]
-  end_move_columns(m)
+  @deferredcall end_move_columns(m)
 end
 
 @cxxdereference function remove_columns!(itemmodel::JuliaItemModel, columnidx, ncolumns)
@@ -295,13 +295,13 @@ end
   for (i,h) in enumerate(headervalues)
     m.setheaderdata(m.values[], i, QML.Horizontal, h, EditRole)
   end
-  end_remove_columns(itemmodel)
+  @deferredcall end_remove_columns(itemmodel)
 end
 
 @cxxdereference function set_column!(m::JuliaItemModel, columnidx, column::QVariant)
   modeldata = get_julia_data(m)
   set_column!(modeldata, columnidx, value(column))
-  emit_data_changed(m, 1, columnidx, Base.size(modeldata.values[],1), columnidx)
+  @deferredcall emit_data_changed(m, 1, columnidx, Base.size(modeldata.values[],1), columnidx)
 end
 
 function set_column!(modeldata::ItemModelData, columnidx, column::AbstractVector{QVariant})
@@ -312,7 +312,7 @@ clear!(m::ItemModelData) = empty!(m.values[])
 @cxxdereference function clear!(itemmodel::JuliaItemModel)
   begin_reset_model(itemmodel)
   clear!(get_julia_data(itemmodel))
-  end_reset_model(itemmodel)
+  @deferredcall end_reset_model(itemmodel)
 end
 
 Base.push!(m::ItemModelData, val) = push!(m.values[], val)
@@ -506,14 +506,14 @@ Base.getindex(lm::JuliaItemModel, idx::Int) = get_julia_data(lm).values[][idx]
 function Base.setindex!(lm::JuliaItemModel, value, row, col=1)
   lmdata = get_julia_data(lm)
   lmdata.values[][row, col] = value
-  emit_data_changed(lm, row, col, row, col)
+  @deferredcall emit_data_changed(lm, row, col, row, col)
 end
 function Base.push!(lm::JuliaItemModel, val)
   m = get_julia_data(lm)
   idx = rowcount(m) + 1
   begin_insert_rows(lm, idx, idx)
   push!(m.values[], val)
-  end_insert_rows(lm)
+  @deferredcall end_insert_rows(lm)
 end
 function Base.size(lm::JuliaItemModel)
   modeldata = get_julia_data(lm)
@@ -527,5 +527,5 @@ Base.delete!(lm::JuliaItemModel, i) = remove_rows!(lm, i, 1)
 
 function force_model_update(lm::JuliaItemModel)
   begin_reset_model(lm)
-  end_reset_model(lm)
+  @deferredcall end_reset_model(lm)
 end
