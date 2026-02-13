@@ -1,6 +1,6 @@
 name = "QML"
 uuid = "2db162a6-7e43-52c3-8d84-290c1c42d82a"
-version = "0.12.0"
+version = "0.12.1"
 authors = ["Bart Janssens <bart@bartjanssens.org>"]
 
 [deps]
@@ -9,6 +9,7 @@ CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 Observables = "510215fc-4207-5dde-b226-833fc4488ee2"
+Qt6Svg_jll = "6de9746b-f93d-5813-b365-ba18ad4a9cf3"
 Qt6Wayland_jll = "e99dba38-086e-5de3-a5b1-6e4c66e897c3"
 jlqml_jll = "6b5019fb-a83d-5b4e-a9f7-678a36c28df7"
 
@@ -27,6 +28,7 @@ ColorTypes = "0.11, 0.12"
 CxxWrap = "0.17.5"
 MacroTools = "0.5"
 Observables = "0.5"
+Qt6Svg_jll = "6.8"
 Qt6Wayland_jll = "6.8"
 jlqml_jll = "0.9.0"
 julia = "1.10"

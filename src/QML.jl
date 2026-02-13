@@ -26,6 +26,7 @@ using Observables
 import Libdl
 using ColorTypes
 using MacroTools: @capture
+import Qt6Svg_jll # Not using extensions for this one since it is an indirect dependency anyway
 
 const envfile = joinpath(dirname(dirname(@__FILE__)), "deps", "env.jl")
 if isfile(envfile)
@@ -142,6 +143,17 @@ function loadqmljll(m::Module)
   end
 end
 
+function add_plugin_path(m::Module)
+  pluginpath = joinpath(m.artifact_dir, "plugins")
+  separator = Sys.iswindows() ? ';' : ':'
+  oldpath = get(ENV, "QT_PLUGIN_PATH", "")
+  newpath = isempty(oldpath) ? pluginpath : oldpath * separator * pluginpath
+  ENV["QT_PLUGIN_PATH"] = newpath
+  @static if Sys.iswindows()
+    qputenv("QT_PLUGIN_PATH", QByteArray(newpath))
+  end
+end
+
 # Persistent C++ - compatible storage of the command line arguments, passed to the QGuiApplication constructor
 mutable struct ArgcArgv
   argv
@@ -172,6 +184,7 @@ function __init__()
   @initcxx
 
   loadqmljll(jlqml_jll.Qt6Declarative_jll)
+  add_plugin_path(Qt6Svg_jll)
 
   global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
   global APPLICATION = QGuiApplication(ARGV.argc, getargv(ARGV))
