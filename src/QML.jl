@@ -88,6 +88,9 @@ Load a QML file, creating a [`QML.QQmlApplicationEngine`](@ref), and setting the
 """
 function loadqml(qmlfilename; kwargs...)
   qml_engine = init_qmlapplicationengine()
+  return loadqml(qml_engine, qmlfilename; kwargs...)
+end
+function loadqml(qml_engine,qmlfilename; kwargs...)
   ctx = root_context(CxxRef(qml_engine))
   for (key,value) in kwargs
     set_context_property(ctx, String(key), value)
@@ -208,6 +211,7 @@ function Base.iterate(s::QString, i::Integer=1)
 end
 Base.convert(::Type{<:QString}, s::String) = QString(s)
 QString(u::QUrl) = toString(u)
+@cxxdereference Base.show(io::IO, u::QUrl) = print(io, toString(u))
 
 # QByteArray
 Base.convert(::Type{QByteArray}, s::AbstractString) = QByteArray(s)
@@ -310,6 +314,14 @@ Base.iterate(h::QMap, state::QMapIterator) = _qmap_iteration_tuple(h, iteratorne
 Base.values(h::QMap) = QML.values(h)
 Base.keys(h::QMap) = QML.keys(h)
 
+#QTimer helper
+function QTimer(f, interval)
+  timer = QTimer()
+  setInterval(timer, interval)
+  callOnTimeout(timer, f)
+  start(timer)
+end
+
 # Helper to call a julia function
 function julia_call(f, argptr::Ptr{Cvoid})
   arglist = CxxRef{QVariantList}(argptr)[]
@@ -409,17 +421,26 @@ JuliaPropertyMap(dict::Dict{<:AbstractString,<:Any}) = JuliaPropertyMap(dict...)
 
 @cxxdereference value(::Type{JuliaPropertyMap}, qvar::QVariant) = getpropertymap(qvar)
 
-const _queued_properties = []
-
 # Functor to update a QML property when an Observable is changed in Julia
 struct QmlPropertyUpdater
   propertymap::QQmlPropertyMap
   key::String
   active::Bool
 end
+
+const _queued_properties = Dict{QmlPropertyUpdater,Any}()
+const _queue_lock = ReentrantLock()
+_called_update = false;
+
 function (updater::QmlPropertyUpdater)(x)
   if Base.current_task() != Base.roottask
-    push!(_queued_properties, (updater, x))
+    @lock _queue_lock begin 
+      _queued_properties[updater] = x
+      if !_called_update
+        queue_process_eventloop_updates()
+        global _called_update = true
+      end
+    end
     return
   end
   updater.propertymap[updater.key] = x
@@ -445,6 +466,10 @@ macro deferredcall(expr)
       $(esc(expr))
     else
       put!(_deferred_calls, () -> $(esc(expr)))
+      @lock _queue_lock if !_called_update
+        queue_process_eventloop_updates()
+        global _called_update = true
+      end
       nothing
     end
   end
@@ -669,6 +694,7 @@ function Base.displayable(d::JuliaDisplay, mime::AbstractString)
 end
 
 include("itemmodel.jl")
+include("imageprovider.jl")
 
 function exec()
   # We redirect to the Core stdout/err in case threading is used
@@ -687,7 +713,21 @@ function exec()
   return
 end
 
+# Runs all observable and model updates that need to be done on the main event loop
+# Updates are cached here when they were made from a task different from the Julia root task
+function process_eventloop_updates()
+  @lock _queue_lock begin
+    for (updater, x) in _queued_properties
+      updater.propertymap[updater.key] = x
+    end
+    empty!(_queued_properties)
+    run_deferred_calls()
+    global _called_update = false
+  end
+end
+
 function exec_async()
+  global _called_update = true # No need to queue event loop updates to the main thread
   lastdisplay = popdisplay()
   if VERSION >= v"1.12-"
     newrepl = @async Base.run_main_repl(true,true,:yes,true)
@@ -701,11 +741,8 @@ function exec_async()
   pushdisplay(lastdisplay)
 
   while !istaskdone(newrepl)
-      for (updater, x) in _queued_properties
-        updater.propertymap[updater.key] = x
-      end
-      empty!(_queued_properties)
-      run_deferred_calls()
+      process_eventloop_updates()
+      global _called_update = true
       process_events()
       sleep(0.015)
   end
