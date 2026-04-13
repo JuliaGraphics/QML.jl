@@ -16,3 +16,11 @@ let strings = ["TestStr", "😁😃😆abc😎😈☹"]
 
   @test strings == qsl
 end
+
+let filename = "test.txt"
+  uri = QUrlFromLocalFile(filename)
+  uri_repr = repr(uri)
+  @test startswith(uri_repr, "file")
+  @test endswith(uri_repr, filename)
+  @test QML.toLocalFile(uri) == filename
+end
