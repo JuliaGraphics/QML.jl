@@ -148,13 +148,7 @@ end
 
 function add_plugin_path(m::Module)
   pluginpath = joinpath(m.artifact_dir, "plugins")
-  separator = Sys.iswindows() ? ';' : ':'
-  oldpath = get(ENV, "QT_PLUGIN_PATH", "")
-  newpath = isempty(oldpath) ? pluginpath : oldpath * separator * pluginpath
-  ENV["QT_PLUGIN_PATH"] = newpath
-  @static if Sys.iswindows()
-    qputenv("QT_PLUGIN_PATH", QByteArray(newpath))
-  end
+  addLibraryPath(pluginpath)
 end
 
 # Persistent C++ - compatible storage of the command line arguments, passed to the QGuiApplication constructor

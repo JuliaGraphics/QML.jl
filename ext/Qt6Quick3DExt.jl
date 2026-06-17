@@ -5,6 +5,7 @@ using Qt6Quick3D_jll
 
 function __init__()
   QML.loadqmljll(Qt6Quick3D_jll)
+  QML.add_plugin_path(Qt6Quick3D_jll)
 end
 
 end
