@@ -330,6 +330,10 @@ end
 # QQmlPropertyMap indexing interface
 Base.getindex(propmap::QQmlPropertyMap, key::AbstractString) = value(value(propmap, key))
 Base.setindex!(propmap::QQmlPropertyMap, val, key::AbstractString) = insert(propmap, QString(key), QVariant(val))
+function Base.setindex!(propmap::QQmlPropertyMap, val::QObject, key::AbstractString)
+  insert(propmap, QString(key), QVariant(val))
+  setObjectOwnership(CxxPtr(val), CppOwnership)
+end
 Base.setindex!(propmap::QQmlPropertyMap, val::QVariant, key::AbstractString) = insert(propmap, key, val)
 Base.setindex!(propmap::QQmlPropertyMap, val::Irrational, key::AbstractString) = (propmap[key] = convert(Float64, val))
 
